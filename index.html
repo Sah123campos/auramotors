@@ -267,7 +267,8 @@
         /* ---------- Galeria ---------- */
         .gal { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 170px; grid-auto-flow: dense; gap: 12px; }
         @media (min-width: 768px) { .gal { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 210px; } }
-        .gal button { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: #0e0e13; }
+        .gal button { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: #0e0e13; transition: transform .5s var(--ease), border-color .4s, box-shadow .5s; }
+        .gal button:hover, .gal button:focus-visible { transform: translateY(-5px); border-color: rgba(212,175,55,.55); box-shadow: 0 20px 45px -25px rgba(212,175,55,.6); }
         .gal .big { grid-column: span 2; grid-row: span 2; } .gal .tall { grid-row: span 2; } .gal .wide { grid-column: span 2; }
         .gal img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease), filter .6s; filter: saturate(.85) brightness(.8); }
         .gal button:hover img { transform: scale(1.07); filter: saturate(1.1) brightness(1); }
