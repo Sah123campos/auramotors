@@ -4,34 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA | High-End Automotive Atelier</title>
+    <meta name="description" content="AURA Motors — atelier automotivo de alta costura. Coleção, configurador 3D, Drive Studio e concierge VIP.">
+    <meta name="theme-color" content="#070709">
     <link rel="icon" type="image/png" href="./LOGO.png?v=2">
-    
-    <!-- Fonts & Icons -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            bg: '#070709',
-                            surface: '#111116',
-                            hover: '#1a1a22',
-                            gold: '#d4af37',
-                            goldGlow: 'rgba(212, 175, 55, 0.25)',
-                            textPrimary: '#f3f3f5',
-                            textSecondary: '#8e8e99',
-                            whatsapp: '#25d366'
+                            bg: '#070709', surface: '#111116', hover: '#1a1a22',
+                            gold: '#d4af37', goldGlow: 'rgba(212, 175, 55, 0.25)',
+                            textPrimary: '#f3f3f5', textSecondary: '#8e8e99', whatsapp: '#25d366'
                         }
                     },
-                    fontFamily: {
-                        serif: ['Cinzel', 'serif'],
-                        sans: ['Plus Jakarta Sans', 'sans-serif']
-                    }
+                    fontFamily: { serif: ['Cinzel', 'serif'], sans: ['Plus Jakarta Sans', 'sans-serif'] }
                 }
             }
         }
@@ -39,679 +32,1846 @@
 
     <style>
         :root {
-            --accent: #d4af37;
-            --accent-glow: rgba(212, 175, 55, 0.25);
-            --bg-dark: #070709;
+            --accent: #d4af37; --accent-glow: rgba(212, 175, 55, 0.25); --bg: #070709;
+            --cyan: #38e8ff; --violet: #8b5cf6; --magenta: #ff3fd0; --ease: cubic-bezier(.16, 1, .3, 1);
         }
+        * { -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #f3f3f5; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        body.loading, body.modal-open, body.menu-open { overflow: hidden; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+        input, select, textarea { font-family: inherit; }
+        section, header { scroll-margin-top: 0; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: #f3f3f5;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-        }
+        /* ---------- WebGL layer ---------- */
+        #gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+        main { position: relative; z-index: 10; }
+        .vignette { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(0,0,0,.6) 100%); }
+        .grain { position: fixed; inset: -50%; z-index: 70; pointer-events: none; opacity: .06;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+            animation: grain 1s steps(6) infinite; }
+        @keyframes grain { 0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-3%)} 60%{transform:translate(-2%,-1%)} 80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)} }
+        .fallback-bg { display: none; position: fixed; inset: 0; z-index: 0; background: #070709 url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=2000&q=80') center/cover; opacity: .3; }
+        body.no-webgl .fallback-bg { display: block; }
+        body.no-webgl #gl { display: none; }
 
-        /* Custom Cursor for Desktop */
+        /* ---------- Loader ---------- */
+        #loader { position: fixed; inset: 0; z-index: 10000; background: #070709; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 1.1s cubic-bezier(.76, 0, .24, 1); }
+        #loader.done { transform: translateY(-100%); }
+        #loader .inner { display: flex; flex-direction: column; align-items: center; gap: 30px; transition: opacity .5s; }
+        #loader.done .inner { opacity: 0; }
+        #loader img { width: min(520px, 82vw); height: auto; -webkit-mask-image: radial-gradient(ellipse at center, #000 52%, transparent 76%); mask-image: radial-gradient(ellipse at center, #000 52%, transparent 76%); animation: breathe 2.4s ease-in-out infinite; }
+        @keyframes breathe { 50% { transform: scale(1.03); filter: brightness(1.25); } }
+        #loader .count { font-family: 'Cinzel', serif; font-size: 1.1rem; letter-spacing: .5em; color: var(--accent); }
+        #loader .bar { width: min(260px, 60vw); height: 1px; background: rgba(255,255,255,.12); overflow: hidden; }
+        #loader .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta)); transform: scaleX(0); transform-origin: left; }
+
+        /* ---------- Cursor ---------- */
         @media (pointer: fine) {
-            body {
-                cursor: none;
-            }
-            .cursor-dot, .cursor-circle {
-                position: fixed;
-                top: 0;
-                left: 0;
-                transform: translate(-50%, -50%);
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 9999;
-            }
-            .cursor-dot {
-                width: 8px;
-                height: 8px;
-                background-color: var(--accent);
-                transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
-            }
-            .cursor-circle {
-                width: 44px;
-                height: 44px;
-                border: 1px solid rgba(212, 175, 55, 0.4);
-                transition: transform 0.15s ease-out, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
-            }
-            body.hovering .cursor-dot {
-                width: 4px;
-                height: 4px;
-                background-color: #ffffff;
-            }
-            body.hovering .cursor-circle {
-                width: 64px;
-                height: 64px;
-                border-color: var(--accent);
-                background-color: rgba(212, 175, 55, 0.05);
-                backdrop-filter: blur(2px);
-            }
+            body { cursor: none; }
+            a, button, select, input, label, summary { cursor: none; }
+            .cursor-dot, .cursor-circle { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 20000; }
+            .cursor-dot { width: 8px; height: 8px; background: var(--accent); transition: width .2s, height .2s, opacity .2s; }
+            .cursor-circle { width: 44px; height: 44px; border: 1px solid rgba(212,175,55,.4); display: flex; align-items: center; justify-content: center; transition: width .35s var(--ease), height .35s var(--ease), border-color .3s, background .3s; }
+            .cursor-circle span { font-size: 9px; letter-spacing: .25em; color: #fff; opacity: 0; transition: opacity .25s; font-weight: 600; }
+            body.hovering .cursor-dot { width: 4px; height: 4px; background: #fff; }
+            body.hovering .cursor-circle { width: 64px; height: 64px; border-color: var(--accent); background: rgba(212,175,55,.06); }
+            body.labeled .cursor-dot { opacity: 0; }
+            body.labeled .cursor-circle { width: 92px; height: 92px; border-color: var(--accent); background: rgba(212,175,55,.14); }
+            body.labeled .cursor-circle span { opacity: 1; }
         }
+        @media (pointer: coarse) { .cursor-dot, .cursor-circle { display: none; } }
 
-        /* Glassmorphism Header */
-        .glass-header {
-            background: rgba(7, 7, 9, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
+        /* ---------- Nav ---------- */
+        #navbar { background: rgba(7,7,9,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.06); transition: transform .6s var(--ease); }
+        #navbar.nav-hide { transform: translateY(-110%); }
+        .nav-link { position: relative; white-space: nowrap; }
+        .nav-link::after { content: ''; position: absolute; left: 0; bottom: -6px; height: 1px; width: 100%; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
+        .nav-link.active { color: var(--accent); }
+        #mobileMenu { position: fixed; inset: 0; z-index: 55; background: rgba(7,7,9,.97); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.1rem; opacity: 0; pointer-events: none; transition: opacity .5s; overflow-y: auto; padding: 5rem 1rem 2rem; }
+        body.menu-open #mobileMenu { opacity: 1; pointer-events: auto; }
+        #mobileMenu a { font-family: 'Cinzel', serif; font-size: 1.6rem; letter-spacing: .1em; }
+        .burger { width: 28px; height: 14px; position: relative; }
+        .burger i { position: absolute; left: 0; width: 100%; height: 1px; background: #fff; transition: transform .4s var(--ease), top .4s var(--ease); }
+        .burger i:first-child { top: 0; } .burger i:last-child { top: 13px; }
+        body.menu-open .burger i:first-child { top: 6px; transform: rotate(45deg); }
+        body.menu-open .burger i:last-child { top: 6px; transform: rotate(-45deg); }
+        #menuBtn { position: relative; z-index: 60; }
 
-        /* Ambient Glow Effect */
-        .glow-box {
-            box-shadow: 0 0 50px -10px var(--accent-glow);
-        }
+        #dots { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: 11px; }
+        #dots button { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: transparent; transition: all .4s var(--ease); position: relative; }
+        #dots button.active { background: var(--accent); border-color: var(--accent); transform: scale(1.4); }
+        #dots button span { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .3s; color: #fff; pointer-events: none; }
+        #dots button:hover span { opacity: 1; }
+        #progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 80; transform: scaleX(0); transform-origin: left; background: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta), var(--accent)); }
+        @media (max-width: 1279px) { #dots { display: none; } }
 
-        /* Smooth Reveal Animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        /* ---------- Type helpers ---------- */
+        .eyebrow { color: var(--accent); font-size: .72rem; letter-spacing: .38em; text-transform: uppercase; font-weight: 600; display: block; }
+        .split .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
+        .split .w > span { display: inline-block; transform: translateY(118%) rotate(4deg); transform-origin: left bottom; transition: transform 1.2s var(--ease); transition-delay: calc(var(--i) * 70ms); }
+        .split.in .w > span { transform: none; }
+        .grad .w > span, .grad-text { background: linear-gradient(135deg, #ffffff 0%, #e6ca65 50%, #997b15 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .reveal { opacity: 0; transform: translateY(40px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+        .reveal.active { opacity: 1; transform: none; }
+        .sec-title { font-family: 'Cinzel', serif; font-weight: 600; }
+        .lead { color: #8e8e99; font-weight: 300; line-height: 1.75; }
+        .dim { background: linear-gradient(180deg, rgba(7,7,9,0), rgba(7,7,9,.72) 10%, rgba(7,7,9,.72) 90%, rgba(7,7,9,0)); }
+        .panel { background: rgba(14,14,19,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.08); border-radius: 22px; padding: 1.6rem; }
+        .panel h3 { font-family: 'Cinzel', serif; font-weight: 600; }
 
-        /* Gold Gradient Text */
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #ffffff 0%, #e6ca65 50%, #997b15 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        /* ---------- Hero ---------- */
+        #hero h1 { font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(2.3rem, 8.4vw, 8.6rem); line-height: .98; letter-spacing: -.01em; }
+        .hero-fade { opacity: 0; transform: translateY(24px); transition: opacity 1.2s var(--ease) .9s, transform 1.2s var(--ease) .9s; }
+        body.ready .hero-fade { opacity: 1; transform: none; }
+        .scroll-cue i { display: block; width: 1px; height: 56px; background: linear-gradient(to bottom, var(--accent), transparent); animation: cue 2s ease-in-out infinite; transform-origin: top; }
+        @keyframes cue { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+        .hero-badges { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin-top: 1.6rem; }
+        .hero-badges span { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #cfcfd6; border: 1px solid rgba(255,255,255,.14); padding: 6px 14px; border-radius: 999px; background: rgba(7,7,9,.4); backdrop-filter: blur(6px); }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #070709;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1a1a22;
-            border-radius: 4px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
+        .btn-gold { background: var(--accent); color: #000; box-shadow: 0 10px 40px -10px var(--accent-glow); transition: background .4s, transform .4s var(--ease); }
+        .btn-gold:hover { background: #fff; }
+        .btn-ghost { border: 1px solid rgba(255,255,255,.22); transition: background .4s; backdrop-filter: blur(6px); }
+        .btn-ghost:hover { background: rgba(255,255,255,.1); }
+        .btn-wa { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #25d366; color: #000; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; font-size: .72rem; padding: 14px 26px; border-radius: 999px; transition: background .3s, transform .3s; }
+        .btn-wa:hover { background: #fff; }
+
+        /* ---------- Marquee ---------- */
+        .marquee { overflow: hidden; white-space: nowrap; padding: 2rem 0; background: linear-gradient(180deg, rgba(7,7,9,0), rgba(7,7,9,.78) 30%, rgba(7,7,9,.78) 70%, rgba(7,7,9,0)); }
+        .marquee-row { display: inline-block; will-change: transform; font-family: 'Cinzel', serif; font-weight: 900; font-size: clamp(2.6rem, 9vw, 8rem); line-height: 1.05; color: transparent; -webkit-text-stroke: 1px rgba(212,175,55,.6); }
+        .marquee-row.solid { color: rgba(243,243,245,.92); -webkit-text-stroke: 0; }
+        .marquee-row em { font-style: normal; color: var(--accent); -webkit-text-stroke: 0; margin: 0 1.6rem; font-weight: 400; }
+
+        /* ---------- Numbers ---------- */
+        .numbers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.08); border-radius: 22px; overflow: hidden; }
+        @media (min-width: 768px) { .numbers { grid-template-columns: repeat(4, 1fr); } }
+        .numbers > div { background: rgba(10,10,14,.9); padding: 2rem 1.2rem; text-align: center; }
+        .numbers b { display: block; font-family: 'Cinzel', serif; font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; color: #fff; line-height: 1; }
+        .numbers b small { font-size: .9rem; color: var(--accent); font-family: 'Plus Jakarta Sans', sans-serif; margin-left: 4px; }
+        .numbers span { display: block; margin-top: .7rem; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8e8e99; }
+
+        /* ---------- Sobre ---------- */
+        .pillar { padding: 1.8rem; border-radius: 20px; background: rgba(14,14,19,.85); border: 1px solid rgba(255,255,255,.07); transition: border-color .4s, transform .5s var(--ease); }
+        .pillar:hover { border-color: rgba(212,175,55,.45); transform: translateY(-6px); }
+        .pillar .ic, .svc .ic { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(212,175,55,.08); border: 1px solid rgba(212,175,55,.3); color: var(--accent); margin-bottom: 1.1rem; }
+        .pillar .ic svg, .svc .ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .pillar h4, .svc h4 { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.1rem; margin-bottom: .5rem; }
+        .pillar p, .svc p { color: #8e8e99; font-size: .8rem; line-height: 1.75; font-weight: 300; }
+        .quote { font-family: 'Cinzel', serif; font-size: clamp(1.3rem, 3vw, 2.2rem); line-height: 1.35; border-left: 2px solid var(--accent); padding-left: 1.5rem; }
+
+        /* ---------- Coleção ---------- */
+        .filter-btn { border: 1px solid rgba(255,255,255,.12); background: rgba(17,17,22,.8); color: #8e8e99; transition: all .4s var(--ease); }
+        .filter-btn:hover { color: #fff; border-color: rgba(212,175,55,.5); }
+        .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center; margin-top: 1.6rem; }
+        .field { background: rgba(17,17,22,.85); border: 1px solid rgba(255,255,255,.12); color: #f3f3f5; border-radius: 12px; padding: .75rem 1rem; font-size: .8rem; transition: border-color .3s; width: 100%; }
+        .field:focus { outline: none; border-color: var(--accent); }
+        .field option { background: #111116; }
+        .toolbar .field { width: auto; min-width: 200px; }
+        label.lbl { display: block; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8e8e99; margin-bottom: .45rem; }
+        .car-card { transition: opacity .5s, transform .5s; perspective: 1000px; }
+        .car-card.hide { opacity: 0 !important; transform: translateY(20px) scale(.97) !important; pointer-events: none; }
+        .tilt { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: rgba(14,14,19,.92); border: 1px solid rgba(255,255,255,.09); border-radius: 22px; transition: transform .7s var(--ease), border-color .4s, box-shadow .5s; transform-style: preserve-3d; will-change: transform; }
+        .car-card:hover .tilt { border-color: rgba(212,175,55,.5); box-shadow: 0 30px 80px -30px var(--card-glow, rgba(212,175,55,.35)); }
+        .tilt .glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.13), transparent 45%); }
+        .car-card:hover .glare { opacity: 1; }
+        .card-img { position: relative; height: 240px; overflow: hidden; }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease), filter .6s; filter: saturate(.85) brightness(.85); }
+        .car-card:hover .card-img img { transform: scale(1.08); filter: saturate(1.1) brightness(1); }
+        .card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14,14,19,1), transparent 55%); }
+        .badge { position: absolute; top: 16px; left: 16px; z-index: 2; background: rgba(7,7,9,.75); backdrop-filter: blur(8px); border: 1px solid rgba(212,175,55,.4); color: var(--accent); font-size: 10px; letter-spacing: .2em; font-weight: 700; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; }
+        .card-body { padding: 1.6rem 1.7rem 1.7rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+        .card-body h3 { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 600; margin-bottom: .25rem; transition: color .4s; }
+        .car-card:hover h3 { color: var(--accent); }
+        .card-body .sub { color: var(--accent); font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 500; margin-bottom: 1rem; }
+        .card-body .desc { color: #8e8e99; font-size: .78rem; line-height: 1.7; font-weight: 300; margin-bottom: 1.2rem; }
+        .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 0; border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); margin-bottom: 1.2rem; font-size: .75rem; }
+        .specs span { display: block; color: #8e8e99; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+        .specs strong { font-weight: 500; color: #fff; }
+        .card-foot { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+        .card-foot small { display: block; font-size: 10px; text-transform: uppercase; color: #8e8e99; }
+        .card-foot .price { font-weight: 600; font-size: 1.1rem; }
+        .reserve-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.4); color: #25d366; padding: 10px 16px; border-radius: 10px; font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; transition: all .3s; }
+        .reserve-btn:hover { background: #25d366; color: #000; }
+        .card-actions { display: flex; gap: .6rem; margin-top: 1rem; }
+        .card-actions button { flex: 1; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.14); color: #d8d8de; transition: all .3s; }
+        .card-actions button:hover { border-color: var(--accent); color: var(--accent); }
+        .card-actions button.on { background: var(--accent); color: #000; border-color: var(--accent); }
+        #emptyMsg { display: none; text-align: center; padding: 3rem 1rem; color: #8e8e99; }
+        #cmpBar { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 140%); z-index: 90; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: center; background: rgba(14,14,19,.95); border: 1px solid rgba(212,175,55,.5); border-radius: 18px; padding: .8rem 1.2rem; backdrop-filter: blur(12px); transition: transform .6s var(--ease); max-width: calc(100vw - 24px); }
+        #cmpBar.show { transform: translate(-50%, 0); }
+
+        /* ---------- Configurador ---------- */
+        .swatch { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15); position: relative; transition: transform .3s var(--ease), border-color .3s; }
+        .swatch:hover { transform: scale(1.12); }
+        .swatch.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212,175,55,.25); }
+        .opt { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,.1); font-size: .78rem; transition: all .3s; width: 100%; text-align: left; }
+        .opt:hover { border-color: rgba(212,175,55,.5); }
+        .opt.on { border-color: var(--accent); background: rgba(212,175,55,.08); }
+        .opt small { color: #8e8e99; font-size: .7rem; white-space: nowrap; }
+        .seg { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .seg button { padding: .55rem 1rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font-size: .72rem; letter-spacing: .05em; color: #b5b5bf; transition: all .3s; }
+        .seg button.on { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+        .total { font-family: 'Cinzel', serif; font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; }
+
+        /* ---------- Studio (drag stage) ---------- */
+        .stage { position: relative; min-height: 46vh; border-radius: 26px; border: 1px solid rgba(255,255,255,.07); background: radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.05), transparent 65%); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+        .stage .c { position: absolute; width: 22px; height: 22px; border: 1px solid var(--accent); opacity: .8; }
+        .stage .tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; } .stage .tr { top: 14px; right: 14px; border-left: 0; border-bottom: 0; }
+        .stage .bl { bottom: 14px; left: 14px; border-right: 0; border-top: 0; } .stage .br { bottom: 14px; right: 14px; border-left: 0; border-top: 0; }
+        .hud-top { position: absolute; top: 26px; left: 42px; right: 42px; display: flex; justify-content: space-between; gap: 1rem; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: #8e8e99; }
+        .hud-bars { position: absolute; left: 42px; right: 42px; bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+        .hud-bars div { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8e8e99; }
+        .hud-bars i { display: block; margin-top: 8px; height: 2px; background: rgba(255,255,255,.1); position: relative; overflow: hidden; }
+        .hud-bars i b { position: absolute; inset: 0; width: var(--v, 50%); background: var(--mode, var(--accent)); transition: width 1.2s var(--ease), background .6s; box-shadow: 0 0 12px var(--mode, var(--accent)); }
+        .stage-fallback { display: none; position: absolute; inset: 0; border-radius: 26px; object-fit: cover; width: 100%; height: 100%; opacity: .6; }
+        body.no-webgl .stage-fallback { display: block; }
+        .mode-card { display: block; width: 100%; text-align: left; padding: 1.5rem; border-radius: 18px; background: rgba(14,14,19,.85); border: 1px solid rgba(255,255,255,.06); transition: all .5s var(--ease); }
+        .mode-card:hover { border-color: rgba(255,255,255,.22); }
+        .mode-card.active { border-color: var(--mc); box-shadow: 0 0 60px -25px var(--mc); transform: translateX(-8px); }
+        .mode-card h4 { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.1rem; transition: color .4s; }
+        .mode-card.active h4 { color: var(--mc); }
+        .mode-card .tag { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; border: 1px solid var(--mc); color: var(--mc); padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+        .mode-card p { color: #8e8e99; font-size: .75rem; line-height: 1.7; font-weight: 300; margin-top: .5rem; }
+        @media (max-width: 1023px) { .mode-card.active { transform: none; } .hud-top, .hud-bars { left: 28px; right: 28px; } }
+
+        /* ---------- Engineering ---------- */
+        .spec { display: grid; grid-template-columns: 150px 1fr; gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid rgba(255,255,255,.1); }
+        .spec:last-child { border-bottom: 1px solid rgba(255,255,255,.1); }
+        .spec .n { font-family: 'Cinzel', serif; font-weight: 700; font-size: 3rem; line-height: 1; color: #fff; }
+        .spec .n small { font-size: 1rem; color: var(--accent); margin-left: 4px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; }
+        .spec h4 { font-weight: 600; font-size: .95rem; margin-bottom: .3rem; }
+        .spec p { color: #8e8e99; font-size: .78rem; line-height: 1.7; font-weight: 300; }
+        .chip { border: 1px solid rgba(56,232,255,.35); color: var(--cyan); padding: 6px 14px; border-radius: 999px; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; background: rgba(56,232,255,.05); }
+        @media (max-width: 640px) { .spec { grid-template-columns: 110px 1fr; } .spec .n { font-size: 2.2rem; } }
+
+        /* ---------- Serviços ---------- */
+        .svc { padding: 1.8rem; border-radius: 20px; background: rgba(14,14,19,.85); border: 1px solid rgba(255,255,255,.07); transition: border-color .4s, transform .5s var(--ease); }
+        .svc:hover { border-color: rgba(212,175,55,.45); transform: translateY(-6px); }
+
+        /* ---------- Processo ---------- */
+        .steps { position: relative; display: grid; gap: 1.2rem; }
+        @media (min-width: 1024px) { .steps { grid-template-columns: repeat(5, 1fr); } .steps::before { content: ''; position: absolute; top: 27px; left: 5%; right: 5%; height: 1px; background: linear-gradient(90deg, transparent, rgba(212,175,55,.6), transparent); } }
+        .step { position: relative; text-align: center; padding: 0 .5rem; }
+        .step .num { width: 54px; height: 54px; margin: 0 auto 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-weight: 700; color: var(--accent); background: #0b0b10; border: 1px solid var(--accent); position: relative; z-index: 1; box-shadow: 0 0 30px -8px var(--accent); }
+        .step h4 { font-family: 'Cinzel', serif; font-size: 1rem; margin-bottom: .4rem; }
+        .step p { color: #8e8e99; font-size: .76rem; line-height: 1.7; font-weight: 300; }
+
+        /* ---------- Simulador ---------- */
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; background: rgba(255,255,255,.18); border-radius: 3px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); border: 3px solid #0b0b10; box-shadow: 0 0 0 1px var(--accent); }
+        input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 3px solid #0b0b10; }
+        .res-row { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem 0; border-bottom: 1px solid rgba(255,255,255,.07); font-size: .82rem; }
+        .res-row span { color: #8e8e99; }
+
+        /* ---------- Galeria ---------- */
+        .gal { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 170px; grid-auto-flow: dense; gap: 12px; }
+        @media (min-width: 768px) { .gal { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 210px; } }
+        .gal button { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: #0e0e13; }
+        .gal .big { grid-column: span 2; grid-row: span 2; } .gal .tall { grid-row: span 2; } .gal .wide { grid-column: span 2; }
+        .gal img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease), filter .6s; filter: saturate(.85) brightness(.8); }
+        .gal button:hover img { transform: scale(1.07); filter: saturate(1.1) brightness(1); }
+        .gal figcaption { position: absolute; left: 14px; bottom: 12px; right: 14px; text-align: left; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; z-index: 2; text-shadow: 0 2px 10px #000; }
+        .gal button::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.7), transparent 50%); }
+
+        /* ---------- FAQ ---------- */
+        .faq details { border-top: 1px solid rgba(255,255,255,.1); padding: 1.3rem 0; }
+        .faq details:last-child { border-bottom: 1px solid rgba(255,255,255,.1); }
+        .faq summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-weight: 500; font-size: .95rem; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary::after { content: '+'; font-size: 1.5rem; color: var(--accent); transition: transform .4s var(--ease); flex-shrink: 0; }
+        .faq details[open] summary::after { transform: rotate(45deg); }
+        .faq details p { color: #8e8e99; font-size: .85rem; line-height: 1.8; font-weight: 300; margin-top: .9rem; max-width: 60ch; }
+
+        /* ---------- Contato ---------- */
+        #contato { background: linear-gradient(180deg, rgba(7,7,9,.5), rgba(0,0,0,.9) 45%, #000); }
+        #contato h2.big { font-family: 'Cinzel', serif; font-weight: 700; font-size: clamp(2.4rem, 9vw, 8rem); line-height: .98; }
+        .cta-orb { width: 190px; height: 190px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #000; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; font-size: .72rem; background: radial-gradient(circle at 30% 28%, #f6db7e, #d4af37 48%, #8a6b12); box-shadow: 0 0 100px -10px rgba(212,175,55,.55), inset 0 0 40px rgba(255,255,255,.25); transition: box-shadow .5s; }
+        .cta-orb:hover { box-shadow: 0 0 140px 0 rgba(212,175,55,.8), inset 0 0 40px rgba(255,255,255,.35); }
+        .magnetic { transition: transform .5s var(--ease); will-change: transform; }
+        .err { color: #ff6b6b; font-size: .7rem; margin-top: .3rem; display: none; }
+        .field.bad { border-color: #ff6b6b; } .field.bad + .err { display: block; }
+
+        /* ---------- Modal / Lightbox ---------- */
+        .overlay { position: fixed; inset: 0; z-index: 200; background: rgba(4,4,6,.86); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity .4s; }
+        .overlay.open { opacity: 1; pointer-events: auto; }
+        .modal-panel { position: relative; width: min(1080px, 100%); max-height: 92vh; overflow-y: auto; border-radius: 26px; background: #0d0d12; border: 1px solid rgba(212,175,55,.3); transform: translateY(30px) scale(.98); transition: transform .5s var(--ease); }
+        .overlay.open .modal-panel { transform: none; }
+        .x-btn { position: absolute; top: 14px; right: 14px; z-index: 5; width: 42px; height: 42px; border-radius: 50%; background: rgba(7,7,9,.8); border: 1px solid rgba(255,255,255,.2); font-size: 1.2rem; line-height: 1; transition: background .3s, color .3s; }
+        .x-btn:hover { background: var(--accent); color: #000; }
+        .kv { display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+        .kv div { padding: .8rem 1rem; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); }
+        .kv span { display: block; font-size: 10px; color: #8e8e99; text-transform: uppercase; letter-spacing: .12em; }
+        .kv strong { font-weight: 600; font-size: .95rem; }
+        .cmp-table { width: 100%; border-collapse: collapse; font-size: .82rem; min-width: 560px; }
+        .cmp-table th, .cmp-table td { padding: .9rem 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .cmp-table th { font-family: 'Cinzel', serif; font-weight: 600; color: var(--accent); }
+        .cmp-table td:first-child { color: #8e8e99; font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; }
+        #lbImg { max-width: min(1100px, 94vw); max-height: 80vh; border-radius: 16px; object-fit: contain; }
+
+        /* ---------- Floating ---------- */
+        #fab, #toTop { position: fixed; right: 20px; z-index: 85; width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform .4s var(--ease), opacity .4s; }
+        #fab { bottom: 20px; background: #25d366; color: #000; box-shadow: 0 10px 40px -8px rgba(37,211,102,.6); }
+        #fab:hover { transform: scale(1.1); }
+        #toTop { bottom: 86px; background: rgba(14,14,19,.9); border: 1px solid rgba(212,175,55,.5); color: var(--accent); opacity: 0; pointer-events: none; }
+        #toTop.show { opacity: 1; pointer-events: auto; }
+        #toast { position: fixed; left: 50%; top: 88px; transform: translate(-50%, -30px); z-index: 300; background: rgba(14,14,19,.96); border: 1px solid var(--accent); color: #fff; padding: .8rem 1.4rem; border-radius: 999px; font-size: .78rem; opacity: 0; pointer-events: none; transition: all .5s var(--ease); max-width: 92vw; text-align: center; }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #070709; }
+        ::-webkit-scrollbar-thumb { background: #1a1a22; border-radius: 4px; border: 1px solid rgba(212,175,55,.2); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .grain { animation: none; }
+            .split .w > span, .reveal, .hero-fade { transition: none; transform: none; opacity: 1; }
         }
     </style>
 </head>
-<body class="antialiased selection:bg-brand-gold selection:text-black">
+<body class="loading antialiased selection:bg-brand-gold selection:text-black">
 
-    <!-- Custom Cursor -->
-    <div class="cursor-dot hidden md:block"></div>
-    <div class="cursor-circle hidden md:block"></div>
-
-    <nav class="fixed top-0 left-0 w-full z-50 glass-header transition-all duration-300 py-5 px-6 md:px-12 flex justify-between items-center" id="navbar">
-        <a href="#" class="interactive-element block" aria-label="AURA Motors, início">
-            <img src="LOGO.png" alt="AURA Motors" class="block h-12 w-auto object-contain">
-        </a>
-
-        <div class="hidden md:flex items-center space-x-10 text-xs tracking-[0.2em] uppercase font-medium text-brand-textSecondary">
-            <a href="#colecao" class="hover:text-brand-gold transition-colors interactive-element">Coleção</a>
-            <a href="#experiencia" class="hover:text-brand-gold transition-colors interactive-element">Drive Studio</a>
-            <a href="#diferenciais" class="hover:text-brand-gold transition-colors interactive-element">Engenharia</a>
-            <a href="#contato" class="hover:text-brand-gold transition-colors interactive-element">Contato</a>
+    <div id="loader" aria-hidden="true">
+        <div class="inner">
+            <img src="LOGO.png" alt="">
+            <div class="bar"><i id="loaderBar"></i></div>
+            <div class="count" id="loaderCount">000</div>
         </div>
+    </div>
 
-        <a href="https://wa.me/5519989507788?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20atendimento%20VIP%20na%20AURA." 
-           target="_blank" 
-           class="interactive-element text-xs tracking-[0.2em] uppercase border border-brand-gold/50 text-brand-gold px-6 py-3 rounded-full hover:bg-brand-gold hover:text-black transition-all duration-300 font-semibold shadow-lg hover:shadow-brand-goldGlow flex items-center gap-2">
-            <span>Atendimento VIP</span>
-            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.555 4.109 1.525 5.836L0 24l6.328-1.493C8.012 23.473 9.948 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+    <div id="progress"></div>
+    <div class="fallback-bg"></div>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-circle"><span></span></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full z-50 py-3 px-5 md:px-10 flex justify-between items-center" id="navbar">
+        <a href="#hero" class="interactive-element block" aria-label="AURA Motors, início">
+            <img src="LOGO.png" alt="AURA Motors" class="block h-11 md:h-12 w-auto object-contain">
         </a>
+        <div class="hidden lg:flex items-center space-x-7 xl:space-x-9 text-[11px] tracking-[0.18em] uppercase font-medium text-brand-textSecondary">
+            <a href="#colecao" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="colecao">Coleção</a>
+            <a href="#configurador" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="configurador">Configurador</a>
+            <a href="#experiencia" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="experiencia">Drive Studio</a>
+            <a href="#diferenciais" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="diferenciais">Engenharia</a>
+            <a href="#servicos" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="servicos">Serviços</a>
+            <a href="#simulador" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="simulador">Simulador</a>
+            <a href="#contato" class="nav-link hover:text-brand-gold transition-colors interactive-element" data-target="contato">Contato</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="https://wa.me/5519989507788?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20atendimento%20VIP%20na%20AURA." target="_blank" rel="noopener"
+               class="magnetic interactive-element hidden sm:flex text-[11px] tracking-[0.2em] uppercase border border-brand-gold/50 text-brand-gold px-5 py-3 rounded-full hover:bg-brand-gold hover:text-black transition-colors duration-300 font-semibold items-center gap-2">
+                <span>Atendimento VIP</span>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.555 4.109 1.525 5.836L0 24l6.328-1.493C8.012 23.473 9.948 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+            </a>
+            <button id="menuBtn" class="lg:hidden p-2" aria-label="Abrir menu"><span class="burger block"><i></i><i></i></span></button>
+        </div>
     </nav>
 
-    <header class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=2000&q=80" 
-                 alt="AURA Luxury Supercar" 
-                 class="w-full h-full object-cover opacity-30 scale-105 transition-transform duration-1000 transform hover:scale-100">
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/60 to-transparent"></div>
-            <div class="absolute inset-0 bg-radial-gradient from-transparent via-brand-bg/40 to-brand-bg"></div>
-        </div>
+    <div id="mobileMenu">
+        <a href="#sobre">Manifesto</a>
+        <a href="#colecao">Coleção</a>
+        <a href="#configurador">Configurador</a>
+        <a href="#experiencia">Drive Studio</a>
+        <a href="#diferenciais">Engenharia</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#processo">Processo</a>
+        <a href="#simulador">Simulador</a>
+        <a href="#galeria">Galeria</a>
+        <a href="#faq">Perguntas</a>
+        <a href="#contato">Contato</a>
+    </div>
 
-        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center reveal active">
-            <span class="text-brand-gold text-xs md:text-sm font-semibold tracking-[0.4em] uppercase mb-6 block">
-                Atelier Automotivo de Alta Costura
-            </span>
-            <h1 class="font-serif text-4xl sm:text-6xl md:text-8xl font-normal tracking-tight mb-8 leading-none gold-gradient-text">
-                PERFEIÇÃO EM<br>CADA DETALHE
-            </h1>
-            <p class="text-brand-textSecondary text-base md:text-xl font-light max-w-2xl mx-auto leading-relaxed mb-12">
-                Veículos projetados para transcender a mobilidade. Da imponência familiar dos 7 lugares à pura adrenalina dos monopostos.
-            </p>
+    <aside id="dots" aria-label="Seções"></aside>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <a href="#colecao" 
-                   class="interactive-element w-full sm:w-auto bg-brand-gold text-black px-8 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white transition-all duration-300 shadow-xl shadow-brand-goldGlow">
-                    Explorar Frota
-                </a>
-                <a href="#experiencia" 
-                   class="interactive-element w-full sm:w-auto border border-white/20 text-white px-8 py-4 rounded-full text-xs font-semibold tracking-[0.2em] uppercase hover:bg-white/10 transition-all duration-300">
-                    AURA Drive Studio
-                </a>
-            </div>
-        </div>
+    <a id="fab" class="interactive-element" href="https://wa.me/5519989507788?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20AURA." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
+    </a>
+    <button id="toTop" class="interactive-element" aria-label="Voltar ao topo">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
 
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-brand-textSecondary text-xs tracking-[0.2em]">
-            <span>SCROLL</span>
-            <div class="w-px h-12 bg-gradient-to-b from-brand-gold to-transparent animate-pulse"></div>
-        </div>
-    </header>
+    <div id="cmpBar">
+        <span class="text-xs text-brand-textSecondary" id="cmpText">0 selecionados</span>
+        <button class="btn-gold interactive-element px-5 py-2.5 rounded-full text-[11px] font-bold tracking-[0.15em] uppercase" id="cmpOpen">Comparar</button>
+        <button class="interactive-element text-[11px] tracking-[0.15em] uppercase text-brand-textSecondary hover:text-white" id="cmpClear">Limpar</button>
+    </div>
 
-    <section id="colecao" class="py-28 px-6 md:px-12 max-w-7xl mx-auto">
-        <div class="text-center max-w-3xl mx-auto mb-16 reveal">
-            <span class="text-brand-gold text-xs font-semibold tracking-[0.3em] uppercase block mb-3">Catálogo Exclusivo</span>
-            <h2 class="font-serif text-3xl md:text-5xl font-semibold mb-6">Categorias Sob Medida</h2>
-            <p class="text-brand-textSecondary text-sm md:text-base font-light">
-                Selecione o perfil ideal para as suas necessidades de dirigibilidade, espaço e estilo de vida.
-            </p>
+    <!-- Modals -->
+    <div class="overlay" id="modal" role="dialog" aria-modal="true" aria-label="Detalhes do modelo">
+        <div class="modal-panel" id="modalPanel"></div>
+    </div>
+    <div class="overlay" id="cmpModal" role="dialog" aria-modal="true" aria-label="Comparador">
+        <div class="modal-panel p-6 md:p-10" id="cmpPanel"></div>
+    </div>
+    <div class="overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Galeria">
+        <button class="x-btn interactive-element" data-close aria-label="Fechar">&times;</button>
+        <button class="x-btn interactive-element" id="lbPrev" style="top:50%;left:14px;right:auto" aria-label="Anterior">&#8249;</button>
+        <button class="x-btn interactive-element" id="lbNext" style="top:50%;right:14px" aria-label="Próxima">&#8250;</button>
+        <div class="text-center"><img id="lbImg" alt=""><p class="mt-4 text-xs tracking-[0.25em] uppercase text-brand-gold" id="lbCap"></p></div>
+    </div>
 
-            <!-- Filter Buttons -->
-            <div class="flex flex-wrap justify-center gap-3 mt-10" id="filterContainer">
-                <button class="filter-btn interactive-element active px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-brand-gold bg-brand-gold text-black transition-all duration-300" data-filter="todos">
-                    Todos os Modelos
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="7lugares">
-                    7 Lugares
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="luxo">
-                    Luxo Extremo
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="manutencao">
-                    Manutenção Eficiente
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="economico">
-                    Ultra Econômico
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="portamala">
-                    Porta-Malas Grande
-                </button>
-                <button class="filter-btn interactive-element px-6 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium border border-white/10 bg-brand-surface text-brand-textSecondary hover:border-brand-gold/50 hover:text-white transition-all duration-300" data-filter="solo">
-                    Uso Pessoal (1 Pessoa)
-                </button>
-            </div>
-        </div>
-
-        <!-- Car Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="carGrid">
-
-            <!-- Card 1: 7 Lugares -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="7lugares luxo">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        7 Lugares
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Grand Voyager V12" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Grand Voyager</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">SUV Executivo Familial V12</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            Espaço e refinamento sem precedentes para até 7 ocupantes com acabamentos em nogueira e couro integral.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Capacidade</span>
-                                <strong class="text-white font-medium">7 Passageiros</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Motorização</span>
-                                <strong class="text-white font-medium">V12 Mild-Hybrid</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 1.450.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Grand Voyager V12 (7 Lugares)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
+    <main>
+        <!-- HERO -->
+        <header id="hero" class="relative min-h-[100svh] flex flex-col justify-between px-6 md:px-12 pt-28 pb-10">
+            <div class="text-center" data-depth="14">
+                <span class="eyebrow hero-fade mb-6">Atelier Automotivo de Alta Costura</span>
+                <h1 data-split class="grad" id="heroTitle">PERFEIÇÃO EM<br>CADA DETALHE</h1>
+                <div class="hero-badges hero-fade">
+                    <span>6 modelos</span><span>Configurador 3D</span><span>Concierge VIP</span><span>Entrega white-glove</span>
                 </div>
             </div>
-
-            <!-- Card 2: Luxo Extremo -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="luxo">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        Luxo Extremo
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Sovereign Coupe" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Sovereign</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">Gran Turismo de Alta Classe</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            O ápice da engenharia automotiva. Cockpit acusticamente isolado e revestimento artesanal sob medida.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Performance</span>
-                                <strong class="text-white font-medium">0-100 em 3.2s</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Acabamento</span>
-                                <strong class="text-white font-medium">Couro Hermès</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 2.800.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Sovereign Coupe (Luxo Extremo)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3: Manutenção Barata/Eficiente -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="manutencao economico">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        Manutenção Eficiente
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Essential Pure" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Essential Pure</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">Mecânica Durável & Modulada</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            Engenharia simplificada para baixíssimo custo de revisão, aliando alto desempenho à confiabilidade extrema.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Garantia</span>
-                                <strong class="text-white font-medium">10 Anos Fábrica</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Manutenção</span>
-                                <strong class="text-white font-medium">Reduzida em 70%</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 380.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Essential Pure (Manutenção Barata)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 4: Ultra Econômico / Elétrico -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="economico">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        Ultra Econômico
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Pulse EV" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Pulse EV</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">100% Elétrico com Células Solares</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            Consumo mínimo de energia com autonomia estendida para longas jornadas urbanas e rodoviárias.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Autonomia</span>
-                                <strong class="text-white font-medium">750 km por Carga</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Carga Rápida</span>
-                                <strong class="text-white font-medium">15 min (80%)</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 490.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Pulse EV (Ultra Econômico)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 5: Porta-Malas Grande -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="portamala">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        Porta-Malas 680L
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Estate Noir" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Estate Noir</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">Shooting Brake Touring</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            Estilo arrojado com um compartimento de carga expansivo de 680L para viagens executivas sem limitações.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Capacidade Carga</span>
-                                <strong class="text-white font-medium">680 Litros</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Abertura</span>
-                                <strong class="text-white font-medium">Elétrica Hands-Free</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 720.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Estate Noir (Porta-Malas Grande)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 6: Uso Pessoal / 1 Pessoa -->
-            <div class="car-card reveal bg-brand-surface border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-brand-gold/50 transition-all duration-500 hover:-translate-y-2 group" data-category="solo luxo">
-                <div class="relative h-64 overflow-hidden">
-                    <span class="absolute top-4 left-4 z-10 bg-brand-bg/80 backdrop-blur-md border border-brand-gold/40 text-brand-gold text-[10px] tracking-widest font-bold uppercase px-3 py-1 rounded-full">
-                        Monoposto Pessoal
-                    </span>
-                    <img src="https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80" 
-                         alt="AURA Solo Hyper" 
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                </div>
-                <div class="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-serif text-2xl font-semibold mb-1 group-hover:text-brand-gold transition-colors">AURA Solo Hyper</h3>
-                        <p class="text-brand-gold text-xs tracking-widest uppercase font-medium mb-4">Cockpit Monoposto de Pista</p>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light mb-6">
-                            Focado 100% no motorista. Engenharia inspirada na aviação de caça para sensações puras de pilotagem.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5 text-xs mb-6">
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Ocupantes</span>
-                                <strong class="text-white font-medium">1 Pessoa (Driver-Centric)</strong>
-                            </div>
-                            <div>
-                                <span class="text-brand-textSecondary block text-[10px] uppercase">Estrutura</span>
-                                <strong class="text-white font-medium">Monocoque Carbono</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <div>
-                            <span class="text-[10px] text-brand-textSecondary uppercase block">A partir de</span>
-                            <span class="font-semibold text-lg text-white">R$ 1.100.000</span>
-                        </div>
-                        <a href="#" class="reserve-btn interactive-element bg-brand-whatsapp/10 border border-brand-whatsapp/40 text-brand-whatsapp hover:bg-brand-whatsapp hover:text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
-                           data-car="AURA Solo Hyper (1 Pessoa)">
-                            <span>Reservar</span>
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="experiencia" class="py-28 px-6 md:px-12 bg-gradient-to-b from-brand-bg via-brand-surface to-brand-bg border-y border-white/5 relative">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
-                <span class="text-brand-gold text-xs font-semibold tracking-[0.3em] uppercase block mb-3">Tecnologia Imersiva</span>
-                <h2 class="font-serif text-3xl md:text-5xl font-semibold mb-4">AURA Drive Studio</h2>
-                <p class="text-brand-textSecondary text-sm font-light">
-                    Escolha um dos modos de condução abaixo e veja o ambiente do atelier se adaptar instantaneamente à proposta do veículo.
+            <div class="grid grid-cols-1 md:grid-cols-12 items-end gap-8 max-w-[1500px] w-full mx-auto">
+                <p class="hero-fade md:col-span-5 text-brand-textSecondary text-sm md:text-base font-light leading-relaxed max-w-md">
+                    Veículos projetados para transcender a mobilidade. Da imponência familiar dos 7 lugares à pura adrenalina dos monopostos.
                 </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-black border border-white/10 rounded-3xl p-6 md:p-10 relative overflow-hidden shadow-2xl">
-                <!-- Interactive Vehicle Preview Stage -->
-                <div class="lg:col-span-7 relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden flex items-center justify-center">
-                    <img id="studioImage" 
-                         src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80" 
-                         alt="Studio Mode" 
-                         class="w-full h-full object-cover transition-all duration-700">
-                    <div id="studioGlow" class="absolute inset-0 pointer-events-none transition-all duration-700" 
-                         style="background: radial-gradient(circle at center, rgba(212, 175, 55, 0.3) 0%, transparent 70%);"></div>
+                <div class="hero-fade hidden md:flex md:col-span-2 justify-center scroll-cue flex-col items-center gap-3 text-[10px] tracking-[0.3em] text-brand-textSecondary">
+                    <span>ROLE</span><i></i>
                 </div>
-
-                <!-- Mode Selectors -->
-                <div class="lg:col-span-5 space-y-4">
-                    <div class="mode-card interactive-element active p-6 rounded-2xl bg-brand-surface border border-brand-gold cursor-pointer transition-all duration-300"
-                         data-glow="rgba(212, 175, 55, 0.35)"
-                         data-img="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-serif font-semibold text-lg text-brand-gold">01. Stealth Comfort</h4>
-                            <span class="text-[10px] tracking-widest uppercase border border-brand-gold/40 text-brand-gold px-2.5 py-0.5 rounded-full">Executivo</span>
-                        </div>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light">
-                            Suspensão pneumática preditiva com isolamento acústico total e luzes douradas AURA.
-                        </p>
-                    </div>
-
-                    <div class="mode-card interactive-element p-6 rounded-2xl bg-brand-surface border border-white/5 cursor-pointer hover:border-white/20 transition-all duration-300"
-                         data-glow="rgba(239, 68, 68, 0.4)"
-                         data-img="https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-serif font-semibold text-lg text-white">02. Apex Sport</h4>
-                            <span class="text-[10px] tracking-widest uppercase border border-red-500/40 text-red-400 px-2.5 py-0.5 rounded-full">Alta Performance</span>
-                        </div>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light">
-                            Mapeamento de motor agressivo, controle de tração de pista e iluminação em tom Crimson.
-                        </p>
-                    </div>
-
-                    <div class="mode-card interactive-element p-6 rounded-2xl bg-brand-surface border border-white/5 cursor-pointer hover:border-white/20 transition-all duration-300"
-                         data-glow="rgba(56, 189, 248, 0.35)"
-                         data-img="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-serif font-semibold text-lg text-white">03. Lounge Autonomous</h4>
-                            <span class="text-[10px] tracking-widest uppercase border border-sky-500/40 text-sky-400 px-2.5 py-0.5 rounded-full">Autônomo Nível 4</span>
-                        </div>
-                        <p class="text-brand-textSecondary text-xs leading-relaxed font-light">
-                            Pilotagem 100% autônoma com ambiente reclinável relaxante e tom Cyan elétrico.
-                        </p>
-                    </div>
+                <div class="hero-fade md:col-span-5 flex flex-col sm:flex-row gap-4 md:justify-end">
+                    <a href="#colecao" class="magnetic interactive-element btn-gold text-center px-8 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase">Explorar Frota</a>
+                    <a href="#configurador" class="magnetic interactive-element btn-ghost text-center px-8 py-4 rounded-full text-xs font-semibold tracking-[0.2em] uppercase text-white">Configurar o meu</a>
                 </div>
             </div>
+        </header>
+
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-row" id="mq1"></div><br>
+            <div class="marquee-row solid" id="mq2"></div>
         </div>
-    </section>
 
-    <footer id="contato" class="py-20 px-6 md:px-12 bg-black border-t border-white/10 text-center md:text-left">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-            <div class="md:col-span-2 space-y-4">
-                <a href="#" class="inline-block" aria-label="AURA Motors, início">
-                    <img src="LOGO.png" alt="AURA Motors" class="block h-16 w-auto object-contain">
-                </a>
-                <p class="text-brand-textSecondary text-sm font-light max-w-md leading-relaxed">
-                    Atelier automotivo privado especializado em intermediação, personalização e reserva de veículos de luxo e alto desempenho.
-                </p>
-            </div>
+        <!-- MANIFESTO -->
+        <section id="sobre" class="dim py-28 px-6 md:px-12">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
+                    <div class="lg:col-span-6">
+                        <span class="eyebrow mb-3">Manifesto</span>
+                        <h2 data-split class="sec-title text-3xl md:text-6xl mb-6 leading-tight">Uma casa de automóveis, não uma concessionária.</h2>
+                        <p class="reveal lead text-sm md:text-base max-w-xl">
+                            A AURA nasceu para quem entende que um carro é uma extensão de personalidade. Somos um atelier privado: escutamos, curamos, personalizamos e entregamos cada veículo como uma peça feita sob medida, sem vitrines, sem pressa e sem improviso.
+                        </p>
+                    </div>
+                    <div class="lg:col-span-6 reveal">
+                        <p class="quote grad-text">Luxo não é ter mais. É ter exatamente o que foi desenhado para você.</p>
+                    </div>
+                </div>
 
-            <div>
-                <h5 class="text-xs font-semibold tracking-[0.2em] text-brand-gold uppercase mb-6">Navegação</h5>
-                <ul class="space-y-3 text-xs text-brand-textSecondary uppercase tracking-wider font-light">
-                    <li><a href="#colecao" class="hover:text-white transition-colors interactive-element">Frota Completa</a></li>
-                    <li><a href="#experiencia" class="hover:text-white transition-colors interactive-element">AURA Drive Studio</a></li>
-                    <li><a href="#contato" class="hover:text-white transition-colors interactive-element">Agendamento Privado</a></li>
-                </ul>
-            </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                    <div class="pillar reveal">
+                        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg></div>
+                        <h4>Curadoria</h4><p>Cada modelo da coleção passa por seleção rigorosa de engenharia, acabamento e confiabilidade antes de chegar até você.</p>
+                    </div>
+                    <div class="pillar reveal" style="transition-delay:90ms">
+                        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20c4 0 6-2 6-4l8-8-3-3-8 8c-2 0-3 2-3 7z"/></svg></div>
+                        <h4>Personalização</h4><p>Cor, rodas, interior e pacotes tecnológicos definidos por você, com pré-visualização em tempo real no nosso configurador.</p>
+                    </div>
+                    <div class="pillar reveal" style="transition-delay:180ms">
+                        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div>
+                        <h4>Discrição</h4><p>Atendimento estritamente sob agendamento, com privacidade total em todas as etapas, da consulta à entrega.</p>
+                    </div>
+                </div>
 
-            <div>
-                <h5 class="text-xs font-semibold tracking-[0.2em] text-brand-gold uppercase mb-6">Contato Direto</h5>
-                <div class="space-y-3 text-xs text-brand-textSecondary font-light">
-                    <p>Atendimento Concierge VIP:</p>
-                    <a href="https://wa.me/5519989507788" target="_blank" class="text-white hover:text-brand-gold font-medium text-sm block transition-colors interactive-element">
-                        +55 (19) 98950-7788
-                    </a>
-                    <p class="text-[10px] text-brand-textSecondary/60 mt-2">Atendimento sob agendamento.</p>
+                <div class="numbers reveal">
+                    <div><b><span data-count="6">0</span></b><span>Modelos na coleção</span></div>
+                    <div><b><span data-count="3">0</span></b><span>Modos de condução</span></div>
+                    <div><b><span data-count="10">0</span><small>anos</small></b><span>Garantia máxima</span></div>
+                    <div><b><span data-count="750">0</span><small>km</small></b><span>Autonomia máxima</span></div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-xs text-brand-textSecondary/60 gap-4">
-            <p>&copy; 2026 AURA Motors Atelier. Todos os direitos reservados.</p>
-            <div class="flex gap-6">
-                <a href="#" class="hover:text-white transition-colors">Termos de Reserva</a>
-                <a href="#" class="hover:text-white transition-colors">Privacidade</a>
+        <!-- COLEÇÃO -->
+        <section id="colecao" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.35),rgba(7,7,9,.66))">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="eyebrow mb-3">Catálogo Exclusivo</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-6">Categorias Sob Medida</h2>
+                    <p class="reveal lead text-sm md:text-base">
+                        Selecione o perfil ideal para as suas necessidades de dirigibilidade, espaço e estilo de vida. Passe o mouse em um modelo e veja o carro ganhar a cor dele.
+                    </p>
+                    <div class="reveal flex flex-wrap justify-center gap-3 mt-10" id="filterContainer">
+                        <button class="filter-btn interactive-element active px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="todos">Todos os Modelos</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="7lugares">7 Lugares</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="luxo">Luxo Extremo</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="manutencao">Manutenção Eficiente</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="economico">Ultra Econômico</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="portamala">Porta-Malas Grande</button>
+                        <button class="filter-btn interactive-element px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium" data-filter="solo">Uso Pessoal (1 Pessoa)</button>
+                    </div>
+                    <div class="toolbar reveal">
+                        <input id="searchInput" class="field" type="search" placeholder="Buscar modelo..." aria-label="Buscar modelo">
+                        <select id="sortSel" class="field" aria-label="Ordenar">
+                            <option value="padrao">Ordem da coleção</option>
+                            <option value="menor">Menor preço</option>
+                            <option value="maior">Maior preço</option>
+                            <option value="potencia">Maior potência</option>
+                            <option value="nome">Nome (A–Z)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="carGrid"></div>
+                <div id="emptyMsg">Nenhum modelo encontrado para esse filtro. Tente limpar a busca.</div>
             </div>
-        </div>
-    </footer>
+        </section>
 
+        <!-- CONFIGURADOR -->
+        <section id="configurador" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.66),rgba(7,7,9,.15) 25%,rgba(7,7,9,.15) 75%,rgba(7,7,9,.5))">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="eyebrow mb-3">Sob Medida</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">Configure a sua AURA</h2>
+                    <p class="reveal lead text-sm">Escolha modelo, cor, rodas, interior e pacotes. O carro ao fundo muda em tempo real e o valor estimado é atualizado a cada opção.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div class="stage lg:col-span-6 h-[46vh] lg:h-[70vh] lg:sticky lg:top-24" data-cursor="ARRASTE">
+                        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+                        <div class="hud-top"><span id="cfgHud">AURA Grand Voyager</span><span class="hidden sm:block">Arraste para girar</span></div>
+                        <div class="hud-bars" style="grid-template-columns:1fr 1fr">
+                            <div>Cor<span class="block mt-2 text-white normal-case tracking-normal text-xs" id="cfgHudColor">Preto Obsidiana</span></div>
+                            <div>Rodas<span class="block mt-2 text-white normal-case tracking-normal text-xs" id="cfgHudWheel">Ouro Polido</span></div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-6 space-y-5" id="cfgPanel">
+                        <div class="panel"><label class="lbl">1 · Modelo</label><div class="seg" id="cfgModels"></div></div>
+                        <div class="panel"><label class="lbl">2 · Cor da carroceria</label><div class="flex flex-wrap gap-3" id="cfgColors"></div><p class="text-xs text-brand-textSecondary mt-3" id="cfgColorName"></p></div>
+                        <div class="panel"><label class="lbl">3 · Rodas</label><div class="flex flex-wrap gap-3" id="cfgWheels"></div><p class="text-xs text-brand-textSecondary mt-3" id="cfgWheelName"></p></div>
+                        <div class="panel"><label class="lbl">4 · Interior</label><div class="space-y-2" id="cfgInteriors"></div></div>
+                        <div class="panel"><label class="lbl">5 · Pacotes opcionais</label><div class="space-y-2" id="cfgPacks"></div></div>
+                        <div class="panel">
+                            <label class="lbl">Valor estimado</label>
+                            <div class="total grad-text" id="cfgTotal">R$ 0</div>
+                            <p class="text-[11px] text-brand-textSecondary mt-2 mb-5">Valores ilustrativos, sujeitos à confirmação do concierge.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button class="btn-wa interactive-element" id="cfgSend">Enviar configuração</button>
+                                <button class="btn-ghost interactive-element px-6 py-3.5 rounded-full text-[11px] tracking-[0.15em] uppercase font-semibold" id="cfgCopy">Copiar resumo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DRIVE STUDIO -->
+        <section id="experiencia" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.5),rgba(7,7,9,.15) 30%,rgba(7,7,9,.15) 70%,rgba(7,7,9,.5))">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="eyebrow mb-3">Tecnologia Imersiva</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">AURA Drive Studio</h2>
+                    <p class="reveal lead text-sm">Escolha um modo de condução e veja o ambiente do atelier mudar de cor, luz e postura. Arraste sobre o carro para girá-lo.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                    <div id="stage" class="stage lg:col-span-7 h-[46vh] lg:h-auto lg:min-h-[560px]" data-cursor="ARRASTE">
+                        <img class="stage-fallback" src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80" alt="">
+                        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+                        <div class="hud-top"><span id="hudMode">Modo ativo: Stealth Comfort</span><span class="hidden sm:block">Arraste para girar</span></div>
+                        <div class="hud-bars" id="hudBars">
+                            <div>Potência<i><b></b></i></div>
+                            <div>Conforto<i><b></b></i></div>
+                            <div>Aderência<i><b></b></i></div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5 space-y-4 self-center" id="modes"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENGENHARIA -->
+        <section id="diferenciais" class="py-28 px-6 md:px-12 min-h-screen flex items-center" style="background:linear-gradient(180deg,rgba(7,7,9,.5),rgba(7,7,9,.12) 25%,rgba(7,7,9,.12) 75%,rgba(7,7,9,.5))">
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-5">
+                    <span class="eyebrow mb-3">Engenharia AURA</span>
+                    <h2 data-split class="sec-title text-3xl md:text-5xl mb-6 leading-tight">O que existe por baixo da pintura</h2>
+                    <p class="reveal lead text-sm mb-10 max-w-md">A carroceria fica translúcida e mostra a estrutura. Cada número abaixo vem de um modelo da coleção.</p>
+                    <div>
+                        <div class="spec reveal"><div class="n"><span data-count="3.2" data-decimals="1">0</span><small>s</small></div><div><h4>0 a 100 km/h</h4><p>AURA Sovereign, o Gran Turismo de alta classe com cockpit acusticamente isolado.</p></div></div>
+                        <div class="spec reveal"><div class="n"><span data-count="750">0</span><small>km</small></div><div><h4>Autonomia por carga</h4><p>AURA Pulse EV, 100% elétrico com células solares.</p></div></div>
+                        <div class="spec reveal"><div class="n"><span data-count="15">0</span><small>min</small></div><div><h4>Carga rápida até 80%</h4><p>Menos tempo parado, mais tempo na estrada.</p></div></div>
+                        <div class="spec reveal"><div class="n"><span data-count="10">0</span><small>anos</small></div><div><h4>Garantia de fábrica</h4><p>AURA Essential Pure, com manutenção reduzida em 70%.</p></div></div>
+                        <div class="spec reveal"><div class="n"><span data-count="900">0</span><small>cv</small></div><div><h4>Potência máxima</h4><p>AURA Solo Hyper, monoposto com monocoque de carbono.</p></div></div>
+                        <div class="spec reveal"><div class="n"><span data-count="680">0</span><small>L</small></div><div><h4>Porta-malas</h4><p>AURA Estate Noir, com abertura elétrica hands-free.</p></div></div>
+                    </div>
+                    <div class="reveal flex flex-wrap gap-2 mt-8">
+                        <span class="chip">Monocoque de carbono</span><span class="chip">V12 Mild-Hybrid</span><span class="chip">Suspensão pneumática preditiva</span><span class="chip">Autônomo Nível 4</span><span class="chip">Células solares</span><span class="chip">Freios carbono-cerâmicos</span>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 hidden lg:block" aria-hidden="true"></div>
+            </div>
+        </section>
+
+        <!-- SERVIÇOS -->
+        <section id="servicos" class="dim py-28 px-6 md:px-12">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="eyebrow mb-3">Concierge AURA</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">Serviços do Atelier</h2>
+                    <p class="reveal lead text-sm">Do primeiro contato ao pós-venda, cada detalhe é tratado por uma equipe dedicada.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="svcGrid"></div>
+            </div>
+        </section>
+
+        <!-- PROCESSO -->
+        <section id="processo" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.5),rgba(7,7,9,.6))">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <span class="eyebrow mb-3">Como funciona</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">Da consulta à entrega</h2>
+                    <p class="reveal lead text-sm">Cinco etapas simples, conduzidas por um único concierge do início ao fim.</p>
+                </div>
+                <div class="steps" id="steps"></div>
+            </div>
+        </section>
+
+        <!-- SIMULADOR -->
+        <section id="simulador" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.6),rgba(7,7,9,.15) 25%,rgba(7,7,9,.15) 75%,rgba(7,7,9,.55))">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="eyebrow mb-3">Planejamento</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">Simulador de Financiamento</h2>
+                    <p class="reveal lead text-sm">Faça uma estimativa rápida de entrada e parcelas. É apenas uma simulação ilustrativa: condições reais são definidas com o concierge.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-6 hidden lg:block" aria-hidden="true"></div>
+                    <div class="lg:col-span-6 panel space-y-6 order-first lg:order-none" id="simPanel">
+                        <div><label class="lbl" for="simModel">Modelo</label><select id="simModel" class="field"></select></div>
+                        <div>
+                            <div class="flex justify-between"><label class="lbl" for="simEntry">Entrada</label><span class="text-xs text-brand-gold" id="simEntryVal"></span></div>
+                            <input type="range" id="simEntry" min="10" max="80" step="5" value="30">
+                        </div>
+                        <div>
+                            <label class="lbl">Prazo</label>
+                            <div class="seg" id="simTerms"></div>
+                        </div>
+                        <div>
+                            <div class="res-row"><span>Valor do veículo</span><strong id="rVeh"></strong></div>
+                            <div class="res-row"><span>Entrada</span><strong id="rEntry"></strong></div>
+                            <div class="res-row"><span>Valor financiado</span><strong id="rFin"></strong></div>
+                            <div class="res-row"><span>Total de juros (estimado)</span><strong id="rInt"></strong></div>
+                            <div class="flex justify-between items-end pt-5"><span class="lbl !mb-0">Parcela estimada</span><span class="total grad-text" id="rPmt"></span></div>
+                        </div>
+                        <p class="text-[11px] text-brand-textSecondary">Taxa ilustrativa de 1,35% ao mês. Não constitui oferta de crédito.</p>
+                        <button class="btn-wa interactive-element w-full" id="simSend">Solicitar proposta</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GALERIA -->
+        <section id="galeria" class="dim py-28 px-6 md:px-12">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="eyebrow mb-3">Galeria</span>
+                    <h2 data-split class="sec-title text-3xl md:text-6xl mb-4">Momentos em movimento</h2>
+                    <p class="reveal lead text-sm">Toque em uma imagem para ampliar e navegue com as setas.</p>
+                </div>
+                <div class="gal reveal" id="gal"></div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="py-28 px-6 md:px-12" style="background:linear-gradient(180deg,rgba(7,7,9,.5),rgba(7,7,9,.75))">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-14">
+                    <span class="eyebrow mb-3">Dúvidas</span>
+                    <h2 data-split class="sec-title text-3xl md:text-5xl mb-4">Perguntas frequentes</h2>
+                </div>
+                <div class="faq reveal" id="faqList"></div>
+            </div>
+        </section>
+
+        <!-- CONTATO -->
+        <section id="contato" class="px-6 md:px-12 pt-32">
+            <div class="max-w-7xl mx-auto pb-24">
+                <div class="text-center mb-20">
+                    <span class="eyebrow mb-6">Atendimento Concierge VIP</span>
+                    <h2 data-split class="big grad mb-14">SUA AURA<br>COMEÇA AQUI</h2>
+                    <div class="flex justify-center">
+                        <a href="https://wa.me/5519989507788?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consulta%20exclusiva%20na%20AURA." target="_blank" rel="noopener" class="magnetic interactive-element cta-orb">
+                            <span>Falar agora</span>
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
+                        </a>
+                    </div>
+                    <p class="text-brand-textSecondary text-xs mt-8 font-light">Atendimento sob agendamento.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-5 space-y-6">
+                        <span class="eyebrow">Agende uma visita</span>
+                        <h3 class="sec-title text-2xl md:text-4xl">Reserve o seu horário privado</h3>
+                        <p class="lead text-sm">Preencha o formulário e enviaremos a solicitação diretamente ao nosso concierge pelo WhatsApp. Retornamos para confirmar data e horário.</p>
+                        <ul class="space-y-3 text-sm text-brand-textSecondary font-light">
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Atendimento individual e reservado</li>
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Apresentação do modelo escolhido</li>
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Simulação de personalização e condições</li>
+                        </ul>
+                    </div>
+                    <form class="lg:col-span-7 panel grid grid-cols-1 sm:grid-cols-2 gap-5" id="bookForm" novalidate>
+                        <div><label class="lbl" for="fName">Nome</label><input class="field" id="fName" type="text" placeholder="Seu nome completo" autocomplete="name"><p class="err">Informe seu nome.</p></div>
+                        <div><label class="lbl" for="fPhone">WhatsApp</label><input class="field" id="fPhone" type="tel" placeholder="(19) 90000-0000" autocomplete="tel"><p class="err">Informe um telefone válido.</p></div>
+                        <div><label class="lbl" for="fModel">Modelo de interesse</label><select class="field" id="fModel"></select></div>
+                        <div><label class="lbl" for="fDate">Data preferida</label><input class="field" id="fDate" type="date"></div>
+                        <div class="sm:col-span-2"><label class="lbl" for="fPeriod">Período</label>
+                            <select class="field" id="fPeriod"><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
+                        <div class="sm:col-span-2"><label class="lbl" for="fMsg">Mensagem (opcional)</label><textarea class="field" id="fMsg" rows="3" placeholder="Conte o que procura, cores, prazos, dúvidas..."></textarea></div>
+                        <div class="sm:col-span-2"><button type="submit" class="btn-wa interactive-element w-full">Enviar solicitação</button></div>
+                    </form>
+                </div>
+            </div>
+
+            <footer class="border-t border-white/10 py-16 text-center md:text-left">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                    <div class="md:col-span-2 space-y-4">
+                        <a href="#hero" class="inline-block" aria-label="AURA Motors, início"><img src="LOGO.png" alt="AURA Motors" class="block h-16 w-auto object-contain mx-auto md:mx-0"></a>
+                        <p class="text-brand-textSecondary text-sm font-light max-w-md leading-relaxed mx-auto md:mx-0">Atelier automotivo privado especializado em intermediação, personalização e reserva de veículos de luxo e alto desempenho.</p>
+                    </div>
+                    <div>
+                        <h5 class="text-xs font-semibold tracking-[0.2em] text-brand-gold uppercase mb-6">Navegação</h5>
+                        <ul class="space-y-3 text-xs text-brand-textSecondary uppercase tracking-wider font-light">
+                            <li><a href="#sobre" class="hover:text-white transition-colors interactive-element">Manifesto</a></li>
+                            <li><a href="#colecao" class="hover:text-white transition-colors interactive-element">Frota Completa</a></li>
+                            <li><a href="#configurador" class="hover:text-white transition-colors interactive-element">Configurador</a></li>
+                            <li><a href="#experiencia" class="hover:text-white transition-colors interactive-element">AURA Drive Studio</a></li>
+                            <li><a href="#diferenciais" class="hover:text-white transition-colors interactive-element">Engenharia</a></li>
+                            <li><a href="#servicos" class="hover:text-white transition-colors interactive-element">Serviços</a></li>
+                            <li><a href="#simulador" class="hover:text-white transition-colors interactive-element">Simulador</a></li>
+                            <li><a href="#faq" class="hover:text-white transition-colors interactive-element">Perguntas</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="text-xs font-semibold tracking-[0.2em] text-brand-gold uppercase mb-6">Contato Direto</h5>
+                        <div class="space-y-3 text-xs text-brand-textSecondary font-light">
+                            <p>Atendimento Concierge VIP:</p>
+                            <a href="https://wa.me/5519989507788" target="_blank" rel="noopener" class="text-white hover:text-brand-gold font-medium text-sm block transition-colors interactive-element">+55 (19) 98950-7788</a>
+                            <p class="text-[10px] text-brand-textSecondary/60 mt-2">Atendimento sob agendamento.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-xs text-brand-textSecondary/60 gap-4">
+                    <p>&copy; 2026 AURA Motors Atelier. Todos os direitos reservados. <span class="opacity-70">Modelo 3D: exemplo do three.js (licença CC-BY).</span></p>
+                    <div class="flex gap-6"><a href="#" class="hover:text-white transition-colors">Termos de Reserva</a><a href="#" class="hover:text-white transition-colors">Privacidade</a></div>
+                </div>
+            </footer>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const phone = "5519989507788";
+    (function () {
+        'use strict';
+        const $ = (s, c) => (c || document).querySelector(s);
+        const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const fine = window.matchMedia('(pointer: fine)').matches;
+        const PHONE = '5519989507788';
+        const BRL = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+        const WA_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>';
+        const openWA = text => window.open('https://wa.me/' + PHONE + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+        const toastEl = $('#toast'); let toastT;
+        function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2800); }
 
-            // 1. Custom Cursor Dynamic Follow
-            const dot = document.querySelector('.cursor-dot');
-            const circle = document.querySelector('.cursor-circle');
-            const interactives = document.querySelectorAll('.interactive-element, a, button, .mode-card');
+        /* =====================================================
+           DATA
+        ===================================================== */
+        const CARS = [
+            { cat: '7lugares luxo', badge: '7 Lugares', img: 'photo-1533473359331-0135ef1b58bf', name: 'AURA Grand Voyager', sub: 'SUV Executivo Familial V12', desc: 'Espaço e refinamento sem precedentes para até 7 ocupantes com acabamentos em nogueira e couro integral.', l1: 'Capacidade', v1: '7 Passageiros', l2: 'Motorização', v2: 'V12 Mild-Hybrid', num: 1450000, wa: 'AURA Grand Voyager V12 (7 Lugares)', color: '#6b4f1d', hp: 612, tq: '85 kgfm', acc: '4,9 s', vmax: '250 km/h', wt: '2.680 kg', feats: ['Bancos captain em couro integral', 'Painéis em nogueira artesanal', 'Suspensão pneumática adaptativa', 'Som Bespoke com 32 alto-falantes'] },
+            { cat: 'luxo', badge: 'Luxo Extremo', img: 'photo-1503376780353-7e6692767b70', name: 'AURA Sovereign', sub: 'Gran Turismo de Alta Classe', desc: 'O ápice da engenharia automotiva. Cockpit acusticamente isolado e revestimento artesanal sob medida.', l1: 'Performance', v1: '0-100 em 3.2s', l2: 'Acabamento', v2: 'Couro Bespoke', num: 2800000, wa: 'AURA Sovereign Coupe (Luxo Extremo)', color: '#3b1a78', hp: 780, tq: '92 kgfm', acc: '3,2 s', vmax: '330 km/h', wt: '1.940 kg', feats: ['Cockpit acusticamente isolado', 'Costuras e revestimentos feitos à mão', 'Freios carbono-cerâmicos', 'Teto de vidro eletrocrômico'] },
+            { cat: 'manutencao economico', badge: 'Manutenção Eficiente', img: 'photo-1552519507-da3b142c6e3d', name: 'AURA Essential Pure', sub: 'Mecânica Durável & Modulada', desc: 'Engenharia simplificada para baixíssimo custo de revisão, aliando alto desempenho à confiabilidade extrema.', l1: 'Garantia', v1: '10 Anos Fábrica', l2: 'Manutenção', v2: 'Reduzida em 70%', num: 380000, wa: 'AURA Essential Pure (Manutenção Barata)', color: '#8c939e', hp: 340, tq: '45 kgfm', acc: '5,4 s', vmax: '240 km/h', wt: '1.520 kg', feats: ['Mecânica modular de fácil reparo', 'Revisões espaçadas e previsíveis', 'Diagnóstico remoto embarcado', 'Peças com disponibilidade garantida'] },
+            { cat: 'economico', badge: 'Ultra Econômico', img: 'photo-1563720223185-11003d516935', name: 'AURA Pulse EV', sub: '100% Elétrico com Células Solares', desc: 'Consumo mínimo de energia com autonomia estendida para longas jornadas urbanas e rodoviárias.', l1: 'Autonomia', v1: '750 km por Carga', l2: 'Carga Rápida', v2: '15 min (80%)', num: 490000, wa: 'AURA Pulse EV (Ultra Econômico)', color: '#0a7f9c', hp: 520, tq: '78 kgfm', acc: '3,9 s', vmax: '220 km/h', wt: '2.050 kg', feats: ['Células solares integradas ao teto', 'Regeneração de energia em 4 níveis', 'Carregamento rápido de 15 min até 80%', 'Pré-climatização pelo aplicativo'] },
+            { cat: 'portamala', badge: 'Porta-Malas 680L', img: 'photo-1618843479313-40f8afb4b4d8', name: 'AURA Estate Noir', sub: 'Shooting Brake Touring', desc: 'Estilo arrojado com um compartimento de carga expansivo de 680L para viagens executivas sem limitações.', l1: 'Capacidade Carga', v1: '680 Litros', l2: 'Abertura', v2: 'Elétrica Hands-Free', num: 720000, wa: 'AURA Estate Noir (Porta-Malas Grande)', color: '#0f3a30', hp: 480, tq: '64 kgfm', acc: '4,5 s', vmax: '265 km/h', wt: '1.830 kg', feats: ['Porta-malas de 680 L (1.480 L rebatido)', 'Abertura elétrica hands-free', 'Trilhos de fixação de carga', 'Suspensão com nivelamento automático'] },
+            { cat: 'solo luxo', badge: 'Monoposto Pessoal', img: 'photo-1544829099-b9a0c07fad1a', name: 'AURA Solo Hyper', sub: 'Cockpit Monoposto de Pista', desc: 'Focado 100% no motorista. Engenharia inspirada na aviação de caça para sensações puras de pilotagem.', l1: 'Ocupantes', v1: '1 Pessoa (Driver-Centric)', l2: 'Estrutura', v2: 'Monocoque Carbono', num: 1100000, wa: 'AURA Solo Hyper (1 Pessoa)', color: '#9c1027', hp: 900, tq: '71 kgfm', acc: '2,6 s', vmax: '340 km/h', wt: '1.120 kg', feats: ['Monocoque de fibra de carbono', 'Cockpit centrado no piloto', 'Head-up display com telemetria', 'Aerodinâmica ativa'] }
+        ];
+        CARS.forEach(c => { c.price = BRL(c.num); });
 
-            if (dot && circle) {
-                window.addEventListener('mousemove', (e) => {
-                    const { clientX: x, clientY: y } = e;
-                    dot.style.left = `${x}px`;
-                    dot.style.top = `${y}px`;
-                    
-                    circle.animate({
-                        left: `${x}px`,
-                        top: `${y}px`
-                    }, { duration: 400, fill: "forwards" });
+        const MODES = [
+            { name: '01. Stealth Comfort', tag: 'Executivo', desc: 'Suspensão pneumática preditiva com isolamento acústico total e luzes douradas AURA.', mc: '#d4af37', body: '#16161d', accent: '#d4af37', l1: '#d4af37', l2: '#ffe9b0', stats: [62, 96, 74], label: 'Stealth Comfort' },
+            { name: '02. Apex Sport', tag: 'Alta Performance', desc: 'Mapeamento de motor agressivo, controle de tração de pista e iluminação em tom Crimson.', mc: '#ff4453', body: '#8f0f22', accent: '#ff3b4a', l1: '#ff3040', l2: '#ff9a3c', stats: [98, 58, 95], label: 'Apex Sport' },
+            { name: '03. Lounge Autonomous', tag: 'Autônomo Nível 4', desc: 'Pilotagem 100% autônoma com ambiente reclinável relaxante e tom Cyan elétrico.', mc: '#38e8ff', body: '#cfd8e3', accent: '#38e8ff', l1: '#38e8ff', l2: '#7c8cff', stats: [70, 92, 80], label: 'Lounge Autonomous' }
+        ];
+        let activeMode = 0;
+
+        const COLORS = [
+            { n: 'Preto Obsidiana', h: '#101017', p: 0 }, { n: 'Ouro Champagne', h: '#b89a5a', p: 18000 },
+            { n: 'Azul Meia-Noite', h: '#12233f', p: 12000 }, { n: 'Verde Britânico', h: '#0f3a30', p: 12000 },
+            { n: 'Vermelho Rubi', h: '#8f0f22', p: 15000 }, { n: 'Branco Pérola', h: '#e6e4dc', p: 22000 },
+            { n: 'Cinza Titânio', h: '#5c6068', p: 9000 }
+        ];
+        const WHEELS = [
+            { n: 'Ouro Polido', h: '#d4af37', p: 0 }, { n: 'Grafite Forjada', h: '#3a3a42', p: 14000 },
+            { n: 'Prata Diamantada', h: '#c9ccd3', p: 9000 }, { n: 'Preto Fosco', h: '#141416', p: 8000 }
+        ];
+        const INTERIORS = [
+            { n: 'Couro Preto & Ouro', p: 0 }, { n: 'Couro Creme & Nogueira', p: 24000 },
+            { n: 'Alcantara Vermelho', p: 19000 }, { n: 'Fibra de Carbono Aparente', p: 38000 }
+        ];
+        const PACKS = [
+            { n: 'Blindagem N3-A', p: 180000 }, { n: 'Teto Solar Panorâmico', p: 26000 },
+            { n: 'Som Bespoke 3D', p: 45000 }, { n: 'Piloto Autônomo N4', p: 60000 }
+        ];
+        const CFG = { model: 0, color: 0, wheel: 0, interior: 0, packs: new Set(), body: COLORS[0].h, rim: WHEELS[0].h, dirty: true };
+
+        const ICONS = {
+            wrench: 'M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-2.3-.7-.7-2.3z',
+            brush: 'M4 20c4 0 6-2 6-4l8-8-3-3-8 8c-2 0-3 2-3 7z',
+            shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+            truck: 'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19.5a1 1 0 1 0 0-.01M17 19.5a1 1 0 1 0 0-.01',
+            globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+            spark: 'M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'
+        };
+        const SERVICES = [
+            { i: 'brush', t: 'Personalização Bespoke', d: 'Cores exclusivas, costuras, madeiras e metais escolhidos com um consultor de design dedicado.' },
+            { i: 'shield', t: 'Blindagem e Segurança', d: 'Blindagem nível III-A e sistemas de proteção integrados sem alterar o desenho original.' },
+            { i: 'truck', t: 'Entrega White-Glove', d: 'Entrega em domicílio, em caminhão fechado e climatizado, com apresentação completa do veículo.' },
+            { i: 'wrench', t: 'Manutenção Concierge', d: 'Retirada e devolução do veículo, com acompanhamento das revisões e diagnóstico remoto.' },
+            { i: 'globe', t: 'Importação Assistida', d: 'Apoio completo em documentação, logística e homologação para modelos sob encomenda.' },
+            { i: 'spark', t: 'Experiências Exclusivas', d: 'Track days, roteiros de condução e eventos privados para a comunidade AURA.' }
+        ];
+        const STEPS = [
+            { t: 'Consulta privada', d: 'Conversa reservada para entender seu perfil, uso e expectativas.' },
+            { t: 'Curadoria', d: 'Apresentamos os modelos mais alinhados ao que você procura.' },
+            { t: 'Personalização', d: 'Definição de cor, rodas, interior e pacotes com pré-visualização.' },
+            { t: 'Reserva e contrato', d: 'Formalização com transparência de prazos, valores e condições.' },
+            { t: 'Entrega', d: 'Seu AURA chega pronto, com apresentação técnica completa.' }
+        ];
+        const FAQ = [
+            ['Como funciona a reserva de um modelo?', 'Você escolhe o modelo, fala com o concierge pelo WhatsApp e agenda uma consulta privada. Depois de definir a configuração, formalizamos a reserva com contrato e cronograma de entrega.'],
+            ['Posso personalizar cor, rodas e interior?', 'Sim. No configurador você visualiza cores, rodas, interiores e pacotes em tempo real e envia a configuração diretamente ao concierge.'],
+            ['Vocês atendem sem agendamento?', 'O atendimento é exclusivamente sob agendamento, para garantir privacidade e tempo dedicado a cada cliente.'],
+            ['Como funciona a garantia?', 'Cada modelo possui garantia de fábrica. O AURA Essential Pure chega a 10 anos, com manutenção reduzida em 70%. Os detalhes de cobertura são apresentados no contrato.'],
+            ['É possível financiar?', 'Sim. Use o simulador para uma estimativa e solicite uma proposta. As condições reais dependem de análise e são definidas com o concierge.'],
+            ['Vocês entregam em outras cidades?', 'A entrega white-glove pode ser combinada para diferentes regiões. Consulte o concierge para prazos e logística.'],
+            ['Posso dar meu carro atual como parte do pagamento?', 'Podemos avaliar o seu veículo atual em uma consulta. A proposta é apresentada após análise do carro.'],
+            ['Posso conhecer o carro antes de decidir?', 'Sim, mediante agendamento. Use o formulário de visita ou fale pelo WhatsApp para combinar data e período.']
+        ];
+        const GALLERY = [
+            { img: 'photo-1503376780353-7e6692767b70', cap: 'AURA Sovereign', cls: 'big' },
+            { img: 'photo-1533473359331-0135ef1b58bf', cap: 'AURA Grand Voyager', cls: '' },
+            { img: 'photo-1544829099-b9a0c07fad1a', cap: 'AURA Solo Hyper', cls: 'tall' },
+            { img: 'photo-1563720223185-11003d516935', cap: 'AURA Pulse EV', cls: '' },
+            { img: 'photo-1618843479313-40f8afb4b4d8', cap: 'AURA Estate Noir', cls: 'wide' },
+            { img: 'photo-1552519507-da3b142c6e3d', cap: 'AURA Essential Pure', cls: '' },
+            { img: 'photo-1617814076367-b759c7d7e738', cap: 'Atelier AURA', cls: 'wide' }
+        ];
+        const SECS = [
+            { id: 'hero', label: 'Início' }, { id: 'sobre', label: 'Manifesto' }, { id: 'colecao', label: 'Coleção' },
+            { id: 'configurador', label: 'Configurador' }, { id: 'experiencia', label: 'Drive Studio' }, { id: 'diferenciais', label: 'Engenharia' },
+            { id: 'servicos', label: 'Serviços' }, { id: 'processo', label: 'Processo' }, { id: 'simulador', label: 'Simulador' },
+            { id: 'galeria', label: 'Galeria' }, { id: 'faq', label: 'Perguntas' }, { id: 'contato', label: 'Contato' }
+        ];
+        const S = {}; SECS.forEach((s, i) => { S[s.id] = i; });
+
+        /* =====================================================
+           TEXT SPLIT + MARQUEE
+        ===================================================== */
+        function splitEl(el) {
+            let i = 0; const out = [];
+            el.childNodes.forEach(n => {
+                if (n.nodeType === 3) n.textContent.split(/\s+/).filter(Boolean).forEach(w => out.push('<span class="w"><span style="--i:' + (i++) + '">' + w + '</span></span>'));
+                else if (n.nodeName === 'BR') out.push('<br>');
+            });
+            const label = el.textContent.trim();
+            el.innerHTML = out.join(' ');
+            el.classList.add('split');
+            el.setAttribute('aria-label', label);
+        }
+        $$('[data-split]').forEach(splitEl);
+        (function () {
+            const unit = 'AURA MOTORS<em>✦</em>DIGITAL INNOVATION IN MOTION<em>✦</em>ATELIER PRIVADO<em>✦</em>';
+            $('#mq1').innerHTML = unit.repeat(4); $('#mq2').innerHTML = unit.repeat(4);
+        })();
+
+        /* =====================================================
+           STATIC RENDERS
+        ===================================================== */
+        $('#dots').innerHTML = SECS.map((s, i) => '<button data-sec="' + i + '" aria-label="' + s.label + '"><span>' + s.label + '</span></button>').join('');
+        $('#svcGrid').innerHTML = SERVICES.map((s, i) => '<div class="svc reveal" style="transition-delay:' + (i % 3) * 90 + 'ms"><div class="ic"><svg viewBox="0 0 24 24"><path d="' + ICONS[s.i] + '"/></svg></div><h4>' + s.t + '</h4><p>' + s.d + '</p></div>').join('');
+        $('#steps').innerHTML = STEPS.map((s, i) => '<div class="step reveal" style="transition-delay:' + i * 90 + 'ms"><div class="num">0' + (i + 1) + '</div><h4>' + s.t + '</h4><p>' + s.d + '</p></div>').join('');
+        $('#faqList').innerHTML = FAQ.map(f => '<details class="interactive-element"><summary>' + f[0] + '</summary><p>' + f[1] + '</p></details>').join('');
+        $('#gal').innerHTML = GALLERY.map((g, i) => '<button class="' + g.cls + ' interactive-element" data-gi="' + i + '" aria-label="Ampliar ' + g.cap + '"><img loading="lazy" src="https://images.unsplash.com/' + g.img + '?auto=format&fit=crop&w=900&q=75" alt="' + g.cap + '"><figcaption>' + g.cap + '</figcaption></button>').join('');
+        $$('#gal img').forEach(im => im.addEventListener('error', () => { im.closest('button').style.display = 'none'; }));
+
+        /* Cards */
+        const grid = $('#carGrid');
+        grid.innerHTML = CARS.map((c, i) => `
+            <article class="car-card reveal" data-cat="${c.cat}" data-color="${c.color}" data-i="${i}" style="transition-delay:${(i % 3) * 90}ms">
+                <div class="tilt">
+                    <div class="card-img">
+                        <span class="badge">${c.badge}</span>
+                        <img src="https://images.unsplash.com/${c.img}?auto=format&fit=crop&w=1000&q=80" alt="${c.name}" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <h3>${c.name}</h3>
+                            <p class="sub">${c.sub}</p>
+                            <p class="desc">${c.desc}</p>
+                            <div class="specs">
+                                <div><span>${c.l1}</span><strong>${c.v1}</strong></div>
+                                <div><span>${c.l2}</span><strong>${c.v2}</strong></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card-foot">
+                                <div><small>A partir de</small><span class="price">${c.price}</span></div>
+                                <a href="#" class="reserve-btn interactive-element" data-car="${c.wa}"><span>Reservar</span>${WA_ICON}</a>
+                            </div>
+                            <div class="card-actions">
+                                <button class="detail-btn interactive-element" data-i="${i}">Detalhes</button>
+                                <button class="cmp-btn interactive-element" data-i="${i}">Comparar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glare"></div>
+                </div>
+            </article>`).join('');
+        const carCards = $$('.car-card');
+        const cardColors = new Map();
+
+        $('#modes').innerHTML = MODES.map((m, i) => `
+            <button class="mode-card interactive-element${i === 0 ? ' active' : ''}" data-mode="${i}" style="--mc:${m.mc}">
+                <div class="flex items-center justify-between gap-3"><h4>${m.name}</h4><span class="tag">${m.tag}</span></div>
+                <p>${m.desc}</p>
+            </button>`).join('');
+
+        /* =====================================================
+           COLLECTION: filter + search + sort + compare + modal
+        ===================================================== */
+        let curFilter = 'todos', curQuery = '', curSort = 'padrao';
+        function applyFilters() {
+            const q = curQuery.trim().toLowerCase();
+            let shown = 0;
+            const order = CARS.map((c, i) => i);
+            if (curSort === 'menor') order.sort((a, b) => CARS[a].num - CARS[b].num);
+            if (curSort === 'maior') order.sort((a, b) => CARS[b].num - CARS[a].num);
+            if (curSort === 'potencia') order.sort((a, b) => CARS[b].hp - CARS[a].hp);
+            if (curSort === 'nome') order.sort((a, b) => CARS[a].name.localeCompare(CARS[b].name));
+            order.forEach((ci, pos) => { carCards[ci].style.order = pos; });
+            carCards.forEach((card, i) => {
+                const c = CARS[i];
+                const okF = curFilter === 'todos' || card.dataset.cat.split(' ').indexOf(curFilter) > -1;
+                const okQ = !q || (c.name + ' ' + c.sub + ' ' + c.badge + ' ' + c.desc).toLowerCase().indexOf(q) > -1;
+                if (okF && okQ) {
+                    shown++;
+                    card.style.display = '';
+                    requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('hide')));
+                } else {
+                    card.classList.add('hide');
+                    setTimeout(() => { if (card.classList.contains('hide')) card.style.display = 'none'; }, 380);
+                }
+            });
+            $('#emptyMsg').style.display = shown ? 'none' : 'block';
+        }
+        const filterBtns = $$('.filter-btn');
+        filterBtns.forEach(btn => btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            curFilter = btn.dataset.filter; applyFilters();
+        }));
+        $('#searchInput').addEventListener('input', e => { curQuery = e.target.value; applyFilters(); });
+        $('#sortSel').addEventListener('change', e => { curSort = e.target.value; applyFilters(); });
+
+        const cmpSet = new Set();
+        function updateCmp() {
+            $$('.cmp-btn').forEach(b => { const on = cmpSet.has(+b.dataset.i); b.classList.toggle('on', on); b.textContent = on ? 'Selecionado' : 'Comparar'; });
+            $('#cmpBar').classList.toggle('show', cmpSet.size > 0);
+            $('#cmpText').textContent = cmpSet.size + (cmpSet.size === 1 ? ' modelo selecionado' : ' modelos selecionados') + ' (máx. 3)';
+            $('#cmpOpen').disabled = cmpSet.size < 2; $('#cmpOpen').style.opacity = cmpSet.size < 2 ? .4 : 1;
+        }
+        updateCmp();
+        $('#cmpClear').addEventListener('click', () => { cmpSet.clear(); updateCmp(); });
+
+        const openOverlay = el => { el.classList.add('open'); document.body.classList.add('modal-open'); };
+        const closeOverlays = () => { $$('.overlay.open').forEach(o => o.classList.remove('open')); document.body.classList.remove('modal-open'); };
+        $$('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o || e.target.closest('[data-close]')) closeOverlays(); }));
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeOverlays();
+            if ($('#lightbox').classList.contains('open')) { if (e.key === 'ArrowRight') lbStep(1); if (e.key === 'ArrowLeft') lbStep(-1); }
+        });
+
+        function openModel(i) {
+            const c = CARS[i];
+            $('#modalPanel').innerHTML = `
+                <button class="x-btn interactive-element" data-close aria-label="Fechar">&times;</button>
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div style="min-height:260px;position:relative"><img src="https://images.unsplash.com/${c.img}?auto=format&fit=crop&w=1200&q=80" alt="${c.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>
+                    <div class="p-6 md:p-9">
+                        <span class="eyebrow mb-2">${c.badge}</span>
+                        <h3 class="sec-title text-3xl mb-1">${c.name}</h3>
+                        <p class="text-brand-gold text-xs tracking-[0.2em] uppercase mb-4">${c.sub}</p>
+                        <p class="lead text-sm mb-6">${c.desc}</p>
+                        <div class="kv mb-6">
+                            <div><span>Potência</span><strong>${c.hp} cv</strong></div><div><span>Torque</span><strong>${c.tq}</strong></div>
+                            <div><span>0–100 km/h</span><strong>${c.acc}</strong></div><div><span>Vel. máxima</span><strong>${c.vmax}</strong></div>
+                            <div><span>Peso</span><strong>${c.wt}</strong></div><div><span>${c.l1}</span><strong>${c.v1}</strong></div>
+                        </div>
+                        <ul class="space-y-2 text-sm text-brand-textSecondary mb-7">${c.feats.map(f => '<li class="flex gap-3"><span class="text-brand-gold">✦</span>' + f + '</li>').join('')}</ul>
+                        <div class="flex items-end justify-between gap-4 flex-wrap">
+                            <div><small class="text-[10px] uppercase text-brand-textSecondary block">A partir de</small><span class="total grad-text">${c.price}</span></div>
+                            <div class="flex gap-3 flex-wrap">
+                                <button class="btn-ghost interactive-element px-5 py-3 rounded-full text-[11px] tracking-[0.15em] uppercase font-semibold" data-cfg="${i}">Configurar</button>
+                                <button class="btn-wa interactive-element" data-res="${i}">Reservar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            openOverlay($('#modal'));
+        }
+        $('#modalPanel').addEventListener('click', e => {
+            const r = e.target.closest('[data-res]'), cf = e.target.closest('[data-cfg]');
+            if (r) openWA('Olá! Gostaria de agendar uma consulta exclusiva e reservar o modelo ' + CARS[+r.dataset.res].wa + ' na AURA.');
+            if (cf) { setCfgModel(+cf.dataset.cfg); closeOverlays(); document.getElementById('configurador').scrollIntoView({ behavior: 'smooth' }); }
+        });
+
+        function openCompare() {
+            const idx = Array.from(cmpSet);
+            const rows = [['Preço', c => c.price], ['Potência', c => c.hp + ' cv'], ['Torque', c => c.tq], ['0–100 km/h', c => c.acc], ['Vel. máxima', c => c.vmax], ['Peso', c => c.wt], ['Destaque', c => c.v1], ['Diferencial', c => c.v2]];
+            $('#cmpPanel').innerHTML = '<button class="x-btn interactive-element" data-close aria-label="Fechar">&times;</button><h3 class="sec-title text-2xl md:text-3xl mb-6">Comparador de modelos</h3><div style="overflow-x:auto"><table class="cmp-table"><thead><tr><th></th>' +
+                idx.map(i => '<th>' + CARS[i].name + '</th>').join('') + '</tr></thead><tbody>' +
+                rows.map(r => '<tr><td>' + r[0] + '</td>' + idx.map(i => '<td>' + r[1](CARS[i]) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+            openOverlay($('#cmpModal'));
+        }
+        $('#cmpOpen').addEventListener('click', () => { if (cmpSet.size >= 2) openCompare(); });
+
+        grid.addEventListener('click', e => {
+            const b = e.target.closest('.reserve-btn');
+            if (b) { e.preventDefault(); openWA('Olá! Gostaria de agendar uma consulta exclusiva e reservar o modelo ' + b.dataset.car + ' na AURA.'); return; }
+            const d = e.target.closest('.detail-btn'); if (d) { openModel(+d.dataset.i); return; }
+            const m = e.target.closest('.cmp-btn');
+            if (m) {
+                const i = +m.dataset.i;
+                if (cmpSet.has(i)) cmpSet.delete(i);
+                else if (cmpSet.size >= 3) { toast('Você pode comparar até 3 modelos.'); return; }
+                else cmpSet.add(i);
+                updateCmp();
+            }
+        });
+
+        if (fine && !reduced) {
+            carCards.forEach(card => {
+                const tilt = $('.tilt', card);
+                card.addEventListener('pointermove', e => {
+                    const r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+                    tilt.style.transition = 'transform .12s linear, border-color .4s, box-shadow .5s';
+                    tilt.style.transform = 'rotateX(' + (-(y - .5) * 9).toFixed(2) + 'deg) rotateY(' + ((x - .5) * 11).toFixed(2) + 'deg) translateZ(0)';
+                    tilt.style.setProperty('--mx', (x * 100) + '%'); tilt.style.setProperty('--my', (y * 100) + '%');
                 });
+                card.addEventListener('pointerleave', () => { tilt.style.transition = ''; tilt.style.transform = ''; });
+            });
+        }
 
-                interactives.forEach(el => {
-                    el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
-                    el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+        /* Gallery lightbox */
+        let lbI = 0;
+        function lbShow() {
+            const g = GALLERY[lbI];
+            $('#lbImg').src = 'https://images.unsplash.com/' + g.img + '?auto=format&fit=crop&w=1600&q=80';
+            $('#lbImg').alt = g.cap; $('#lbCap').textContent = g.cap + '  ·  ' + (lbI + 1) + '/' + GALLERY.length;
+        }
+        function lbStep(d) { lbI = (lbI + d + GALLERY.length) % GALLERY.length; lbShow(); }
+        $('#gal').addEventListener('click', e => { const b = e.target.closest('button[data-gi]'); if (!b) return; lbI = +b.dataset.gi; lbShow(); openOverlay($('#lightbox')); });
+        $('#lbPrev').addEventListener('click', () => lbStep(-1));
+        $('#lbNext').addEventListener('click', () => lbStep(1));
+
+        /* =====================================================
+           CONFIGURADOR
+        ===================================================== */
+        function cfgTotal() {
+            let t = CARS[CFG.model].num + COLORS[CFG.color].p + WHEELS[CFG.wheel].p + INTERIORS[CFG.interior].p;
+            CFG.packs.forEach(i => { t += PACKS[i].p; });
+            return t;
+        }
+        function cfgRender() {
+            $('#cfgModels').innerHTML = CARS.map((c, i) => '<button class="interactive-element' + (i === CFG.model ? ' on' : '') + '" data-m="' + i + '">' + c.name.replace('AURA ', '') + '</button>').join('');
+            $('#cfgColors').innerHTML = COLORS.map((c, i) => '<button class="swatch interactive-element' + (i === CFG.color ? ' on' : '') + '" style="background:' + c.h + '" data-c="' + i + '" aria-label="' + c.n + '" title="' + c.n + '"></button>').join('');
+            $('#cfgWheels').innerHTML = WHEELS.map((c, i) => '<button class="swatch interactive-element' + (i === CFG.wheel ? ' on' : '') + '" style="background:radial-gradient(circle at 35% 30%,#fff3,' + c.h + ' 60%)" data-w="' + i + '" aria-label="' + c.n + '" title="' + c.n + '"></button>').join('');
+            $('#cfgInteriors').innerHTML = INTERIORS.map((c, i) => '<button class="opt interactive-element' + (i === CFG.interior ? ' on' : '') + '" data-i="' + i + '"><span>' + c.n + '</span><small>' + (c.p ? '+ ' + BRL(c.p) : 'Incluso') + '</small></button>').join('');
+            $('#cfgPacks').innerHTML = PACKS.map((c, i) => '<button class="opt interactive-element' + (CFG.packs.has(i) ? ' on' : '') + '" data-p="' + i + '"><span>' + (CFG.packs.has(i) ? '✓ ' : '') + c.n + '</span><small>+ ' + BRL(c.p) + '</small></button>').join('');
+            $('#cfgColorName').textContent = COLORS[CFG.color].n + (COLORS[CFG.color].p ? ' · + ' + BRL(COLORS[CFG.color].p) : ' · Incluso');
+            $('#cfgWheelName').textContent = WHEELS[CFG.wheel].n + (WHEELS[CFG.wheel].p ? ' · + ' + BRL(WHEELS[CFG.wheel].p) : ' · Incluso');
+            $('#cfgHud').textContent = CARS[CFG.model].name;
+            $('#cfgHudColor').textContent = COLORS[CFG.color].n;
+            $('#cfgHudWheel').textContent = WHEELS[CFG.wheel].n;
+            $('#cfgTotal').textContent = BRL(cfgTotal());
+            CFG.body = COLORS[CFG.color].h; CFG.rim = WHEELS[CFG.wheel].h; CFG.dirty = true;
+        }
+        function setCfgModel(i) { CFG.model = i; cfgRender(); }
+        function cfgSummary() {
+            const packs = Array.from(CFG.packs).map(i => PACKS[i].n);
+            return 'Modelo: ' + CARS[CFG.model].name + '\nCor: ' + COLORS[CFG.color].n + '\nRodas: ' + WHEELS[CFG.wheel].n + '\nInterior: ' + INTERIORS[CFG.interior].n + '\nPacotes: ' + (packs.length ? packs.join(', ') : 'nenhum') + '\nValor estimado: ' + BRL(cfgTotal());
+        }
+        $('#cfgPanel').addEventListener('click', e => {
+            const m = e.target.closest('[data-m]'), c = e.target.closest('[data-c]'), w = e.target.closest('[data-w]'), it = e.target.closest('#cfgInteriors [data-i]'), p = e.target.closest('[data-p]');
+            if (m) CFG.model = +m.dataset.m;
+            else if (c) CFG.color = +c.dataset.c;
+            else if (w) CFG.wheel = +w.dataset.w;
+            else if (it) CFG.interior = +it.dataset.i;
+            else if (p) { const k = +p.dataset.p; if (CFG.packs.has(k)) CFG.packs.delete(k); else CFG.packs.add(k); }
+            else return;
+            cfgRender();
+        });
+        $('#cfgSend').addEventListener('click', () => openWA('Olá! Configurei meu veículo no site da AURA:\n\n' + cfgSummary() + '\n\nGostaria de conversar sobre os próximos passos.'));
+        $('#cfgCopy').addEventListener('click', () => {
+            const txt = cfgSummary();
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => toast('Resumo copiado.'), () => toast('Não foi possível copiar.'));
+            else toast('Copiar não é suportado neste navegador.');
+        });
+        cfgRender();
+
+        /* =====================================================
+           SIMULADOR
+        ===================================================== */
+        const RATE = 0.0135, TERMS = [12, 24, 36, 48, 60];
+        let simTerm = 36;
+        $('#simModel').innerHTML = CARS.map((c, i) => '<option value="' + i + '">' + c.name + ' · ' + c.price + '</option>').join('');
+        $('#simTerms').innerHTML = TERMS.map(t => '<button type="button" class="interactive-element' + (t === simTerm ? ' on' : '') + '" data-t="' + t + '">' + t + 'x</button>').join('');
+        function simCalc() {
+            const car = CARS[+$('#simModel').value], pct = +$('#simEntry').value;
+            const entry = car.num * pct / 100, fin = car.num - entry;
+            const pmt = fin * RATE / (1 - Math.pow(1 + RATE, -simTerm));
+            $('#simEntryVal').textContent = pct + '%';
+            $('#rVeh').textContent = BRL(car.num); $('#rEntry').textContent = BRL(entry); $('#rFin').textContent = BRL(fin);
+            $('#rInt').textContent = BRL(pmt * simTerm - fin); $('#rPmt').textContent = BRL(pmt) + '/mês';
+            return { car: car, pct: pct, entry: entry, pmt: pmt };
+        }
+        $('#simModel').addEventListener('change', simCalc);
+        $('#simEntry').addEventListener('input', simCalc);
+        $('#simTerms').addEventListener('click', e => {
+            const b = e.target.closest('[data-t]'); if (!b) return;
+            simTerm = +b.dataset.t; $$('#simTerms button').forEach(x => x.classList.toggle('on', x === b)); simCalc();
+        });
+        $('#simSend').addEventListener('click', () => {
+            const r = simCalc();
+            openWA('Olá! Fiz uma simulação no site da AURA:\n\nModelo: ' + r.car.name + '\nEntrada: ' + r.pct + '% (' + BRL(r.entry) + ')\nPrazo: ' + simTerm + 'x\nParcela estimada: ' + BRL(r.pmt) + '\n\nGostaria de receber uma proposta.');
+        });
+        simCalc();
+
+        /* =====================================================
+           FORMULÁRIO DE AGENDAMENTO
+        ===================================================== */
+        $('#fModel').innerHTML = '<option>Ainda não sei</option>' + CARS.map(c => '<option>' + c.name + '</option>').join('');
+        $('#fDate').min = new Date().toISOString().slice(0, 10);
+        $('#bookForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = $('#fName'), phone = $('#fPhone');
+            const okN = name.value.trim().length >= 3, okP = phone.value.replace(/\D/g, '').length >= 10;
+            name.classList.toggle('bad', !okN); phone.classList.toggle('bad', !okP);
+            if (!okN || !okP) { toast('Confira os campos destacados.'); return; }
+            const d = $('#fDate').value ? $('#fDate').value.split('-').reverse().join('/') : 'a combinar';
+            const msg = $('#fMsg').value.trim();
+            openWA('Olá! Meu nome é ' + name.value.trim() + '.\nGostaria de agendar uma visita privada na AURA.\n\nModelo: ' + $('#fModel').value + '\nData preferida: ' + d + '\nPeríodo: ' + $('#fPeriod').value + '\nWhatsApp: ' + phone.value.trim() + (msg ? '\nMensagem: ' + msg : ''));
+            toast('Abrindo o WhatsApp com a sua solicitação.');
+        });
+        [$('#fName'), $('#fPhone')].forEach(i => i.addEventListener('input', () => i.classList.remove('bad')));
+
+        /* =====================================================
+           CURSOR / MAGNETIC / MENU
+        ===================================================== */
+        const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+        const dot = $('.cursor-dot'), circle = $('.cursor-circle'), circleLabel = $('span', circle);
+        const cur2 = { x: innerWidth / 2, y: innerHeight / 2, tx: innerWidth / 2, ty: innerHeight / 2 };
+        window.addEventListener('pointermove', e => {
+            mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = (e.clientY / innerHeight) * 2 - 1;
+            cur2.tx = e.clientX; cur2.ty = e.clientY;
+            if (fine) { dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px'; }
+        }, { passive: true });
+        if (fine) {
+            document.addEventListener('pointerover', e => {
+                const lab = e.target.closest('[data-cursor]');
+                if (lab) { circleLabel.textContent = lab.dataset.cursor; document.body.classList.add('labeled'); }
+                else document.body.classList.remove('labeled');
+                document.body.classList.toggle('hovering', !!e.target.closest('a, button, .interactive-element, .mode-card, summary'));
+            });
+        }
+        if (fine && !reduced) {
+            $$('.magnetic').forEach(el => {
+                el.addEventListener('pointermove', e => {
+                    const r = el.getBoundingClientRect();
+                    el.style.transform = 'translate(' + ((e.clientX - r.left - r.width / 2) * .3).toFixed(1) + 'px,' + ((e.clientY - r.top - r.height / 2) * .3).toFixed(1) + 'px)';
                 });
+                el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+            });
+        }
+        $('#menuBtn').addEventListener('click', () => document.body.classList.toggle('menu-open'));
+        $$('#mobileMenu a').forEach(a => a.addEventListener('click', () => document.body.classList.remove('menu-open')));
+        $('#toTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        /* =====================================================
+           SECTIONS / SCROLL
+        ===================================================== */
+        const secEls = SECS.map(s => document.getElementById(s.id));
+        let tops = SECS.map((s, i) => i), vh = innerHeight, W = innerWidth, H = innerHeight, docH = 1;
+        function measure() {
+            vh = innerHeight; W = innerWidth; H = innerHeight;
+            tops = secEls.map(el => el.getBoundingClientRect().top + window.scrollY);
+            docH = document.documentElement.scrollHeight - vh;
+        }
+        function sectionAt(y) { let idx = 0; for (let i = 0; i < tops.length; i++) if (tops[i] <= y) idx = i; return idx; }
+        const dotsBtns = $$('#dots button');
+        dotsBtns.forEach(b => b.addEventListener('click', () => secEls[+b.dataset.sec].scrollIntoView({ behavior: 'smooth' })));
+        const navLinks = $$('.nav-link');
+        const navbar = $('#navbar'), progressBar = $('#progress'), toTop = $('#toTop');
+        let lastScrollY = 0;
+        function onScrollUI() {
+            const y = window.scrollY;
+            progressBar.style.transform = 'scaleX(' + (docH > 0 ? Math.min(1, y / docH) : 0) + ')';
+            navbar.classList.toggle('nav-hide', y > lastScrollY && y > 240 && !document.body.classList.contains('menu-open'));
+            toTop.classList.toggle('show', y > 900);
+            lastScrollY = y;
+            const s = sectionAt(y + vh * .45);
+            dotsBtns.forEach((b, i) => b.classList.toggle('active', i === s));
+            navLinks.forEach(a => a.classList.toggle('active', a.dataset.target === SECS[s].id));
+        }
+        window.addEventListener('scroll', onScrollUI, { passive: true });
+
+        function countUp(el) {
+            const end = parseFloat(el.dataset.count), dec = +(el.dataset.decimals || 0), dur = 1800, t0 = performance.now();
+            (function step(now) {
+                const p = Math.min(1, (now - t0) / dur), e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+                el.textContent = (end * e).toFixed(dec);
+                if (p < 1) requestAnimationFrame(step);
+            })(t0);
+        }
+        function startObservers() {
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(en => {
+                    if (!en.isIntersecting) return;
+                    const el = en.target;
+                    if (el.classList.contains('split')) el.classList.add('in');
+                    if (el.classList.contains('reveal')) el.classList.add('active');
+                    if (el.dataset.count) countUp(el);
+                    io.unobserve(el);
+                });
+            }, { threshold: .15 });
+            $$('.split, .reveal, [data-count]').forEach(el => io.observe(el));
+        }
+
+        /* Studio modes UI */
+        const hudMode = $('#hudMode'), stage = $('#stage'), hudBars = $$('#hudBars b');
+        function setMode(i) {
+            activeMode = i;
+            $$('.mode-card').forEach((c, k) => c.classList.toggle('active', k === i));
+            const m = MODES[i];
+            hudMode.textContent = 'Modo ativo: ' + m.label;
+            stage.style.setProperty('--mode', m.mc);
+            hudBars.forEach((b, k) => { b.style.setProperty('--v', m.stats[k] + '%'); });
+        }
+        $$('.mode-card').forEach(c => c.addEventListener('click', () => setMode(+c.dataset.mode)));
+        setMode(0);
+
+        /* =====================================================
+           WEBGL
+        ===================================================== */
+        let carSettled = false;
+        const GL = initGL();
+        if (!GL) { document.body.classList.add('no-webgl'); carSettled = true; }
+
+        function initGL() {
+            if (typeof THREE === 'undefined') return null;
+            const canvas = $('#gl');
+            const isMobile = Math.min(innerWidth, innerHeight) < 700 || !fine;
+            let renderer;
+            try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: 'high-performance' }); }
+            catch (err) { return null; }
+
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 1.75));
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x070709);
+            scene.fog = new THREE.FogExp2(0x070709, 0.045);
+            const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 120);
+            const lin = hex => new THREE.Color(hex).convertSRGBToLinear();
+
+            /* procedural studio environment */
+            (function makeEnv() {
+                const env = new THREE.Scene();
+                env.add(new THREE.Mesh(new THREE.SphereGeometry(20, 32, 16), new THREE.MeshBasicMaterial({ color: 0x08080c, side: THREE.BackSide })));
+                function panel(w, h, color, k, x, y, z) {
+                    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
+                    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+                }
+                panel(14, 3, 0xffffff, 6, 0, 9, 0);
+                panel(2.5, 10, 0x9ad8ff, 5, -10, 3, 4);
+                panel(2.5, 10, 0xff5fd2, 5, 10, 3, -4);
+                panel(8, 2, 0xffe2a0, 4, 0, 4, -10);
+                panel(10, 1.2, 0xffffff, 3, 0, 1, 10);
+                panel(12, 0.6, 0xffffff, 5, 0, 2.2, 8);
+                const pm = new THREE.PMREMGenerator(renderer);
+                scene.environment = pm.fromScene(env, 0.02).texture;
+                pm.dispose();
+            })();
+
+            function glowTexture() {
+                const c = document.createElement('canvas'); c.width = c.height = 128;
+                const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+                gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.35, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+                g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+                return new THREE.CanvasTexture(c);
+            }
+            const GLOW = glowTexture();
+
+            function spline(keys, u) {
+                const n = keys.length;
+                if (u <= keys[0][0]) return keys[0][1];
+                if (u >= keys[n - 1][0]) return keys[n - 1][1];
+                let i = 0; while (u > keys[i + 1][0]) i++;
+                const p0 = keys[i], p1 = keys[i + 1], h = p1[0] - p0[0], t = (u - p0[0]) / h;
+                const m0 = i > 0 ? (p1[1] - keys[i - 1][1]) / (p1[0] - keys[i - 1][0]) : (p1[1] - p0[1]) / h;
+                const m1 = i < n - 2 ? (keys[i + 2][1] - p0[1]) / (keys[i + 2][0] - p0[0]) : (p1[1] - p0[1]) / h;
+                const t2 = t * t, t3 = t2 * t;
+                return (2 * t3 - 3 * t2 + 1) * p0[1] + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * p1[1] + (t3 - t2) * h * m1;
             }
 
-            // 2. Category Filtering Logic
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            const carCards = document.querySelectorAll('.car-card');
-
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterBtns.forEach(b => {
-                        b.classList.remove('active', 'bg-brand-gold', 'text-black', 'border-brand-gold');
-                        b.classList.add('bg-brand-surface', 'text-brand-textSecondary', 'border-white/10');
-                    });
-
-                    btn.classList.add('active', 'bg-brand-gold', 'text-black', 'border-brand-gold');
-                    btn.classList.remove('bg-brand-surface', 'text-brand-textSecondary', 'border-white/10');
-
-                    const category = btn.getAttribute('data-filter');
-
-                    carCards.forEach(card => {
-                        const cardCats = card.getAttribute('data-category');
-                        if (category === 'todos' || cardCats.includes(category)) {
-                            card.style.display = 'flex';
-                            setTimeout(() => {
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }, 50);
-                        } else {
-                            card.style.opacity = '0';
-                            card.style.transform = 'translateY(20px)';
-                            setTimeout(() => {
-                                card.style.display = 'none';
-                            }, 300);
-                        }
-                    });
-                });
-            });
-
-            // 3. WhatsApp Reservation Direct Links
-            const reserveBtns = document.querySelectorAll('.reserve-btn');
-            reserveBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const carName = btn.getAttribute('data-car');
-                    const text = `Olá! Gostaria de agendar uma consulta exclusiva e reservar o modelo ${carName} na AURA.`;
-                    const targetUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-                    window.open(targetUrl, '_blank');
-                });
-            });
-
-            // 4. Interactive Studio Modes Logic
-            const modeCards = document.querySelectorAll('.mode-card');
-            const studioImage = document.getElementById('studioImage');
-            const studioGlow = document.getElementById('studioGlow');
-
-            modeCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    modeCards.forEach(m => {
-                        m.classList.remove('active', 'border-brand-gold');
-                        m.classList.add('border-white/5');
-                        const h4 = m.querySelector('h4');
-                        if (h4) h4.classList.replace('text-brand-gold', 'text-white');
-                    });
-
-                    card.classList.add('active', 'border-brand-gold');
-                    card.classList.remove('border-white/5');
-                    const activeH4 = card.querySelector('h4');
-                    if (activeH4) activeH4.classList.replace('text-white', 'text-brand-gold');
-
-                    const glow = card.getAttribute('data-glow');
-                    const imgUrl = card.getAttribute('data-img');
-
-                    if (studioImage) studioImage.src = imgUrl;
-                    if (studioGlow) studioGlow.style.background = `radial-gradient(circle at center, ${glow} 0%, transparent 70%)`;
-                });
-            });
-
-            // 5. Scroll Reveal Intersection Observer
-            const reveals = document.querySelectorAll('.reveal');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
+            function loft(o) {
+                const us = o.us, vs = o.vs, pos = new Float32Array((us + 1) * vs * 3);
+                let k = 0;
+                for (let i = 0; i <= us; i++) {
+                    const u = i / us, x = o.x0 + (o.x1 - o.x0) * u;
+                    const yT = spline(o.top, u), yB = spline(o.bottom, u), hw0 = spline(o.width, u);
+                    const e = Math.min(1, Math.sqrt(Math.min(u, 1 - u) / 0.025));
+                    const hh = (yT - yB) / 2 * e, hw = hw0 * e, cy = (yT + yB) / 2;
+                    for (let j = 0; j < vs; j++) {
+                        const a = j / vs * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+                        pos[k++] = x;
+                        pos[k++] = cy + hh * Math.sign(s) * Math.pow(Math.abs(s), 2 / o.n);
+                        pos[k++] = hw * Math.sign(c) * Math.pow(Math.abs(c), 2 / o.n);
                     }
-                });
-            }, { threshold: 0.1 });
+                }
+                const idx = [];
+                for (let i = 0; i < us; i++) for (let j = 0; j < vs; j++) {
+                    const a = i * vs + j, b = i * vs + (j + 1) % vs, c = (i + 1) * vs + j, d = (i + 1) * vs + (j + 1) % vs;
+                    idx.push(a, c, b, b, c, d);
+                }
+                const g = new THREE.BufferGeometry();
+                g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                g.setIndex(idx); g.computeVertexNormals();
+                return g;
+            }
 
-            reveals.forEach(el => observer.observe(el));
-        });
+            const G = {
+                body: loft({ x0: -2.3, x1: 2.3, us: 90, vs: 48, n: 3.2,
+                    top: [[0, .56], [.05, .7], [.16, .77], [.36, .74], [.52, .7], [.7, .62], [.86, .5], [.95, .4], [1, .33]],
+                    bottom: [[0, .3], [.08, .2], [.2, .15], [.8, .15], [.94, .19], [1, .25]],
+                    width: [[0, .74], [.08, .93], [.22, 1.0], [.5, .97], [.75, .95], [.92, .8], [1, .55]] }),
+                cabin: loft({ x0: -1.6, x1: .95, us: 48, vs: 36, n: 2.6,
+                    top: [[0, .7], [.12, .93], [.42, 1.12], [.68, 1.09], [.9, .9], [1, .68]],
+                    bottom: [[0, .5], [1, .5]],
+                    width: [[0, .6], [.2, .78], [.5, .82], [.8, .74], [1, .5]] }),
+                roof: loft({ x0: -1.1, x1: .4, us: 36, vs: 28, n: 2.6,
+                    top: [[0, 1.0], [.2, 1.12], [.5, 1.15], [.8, 1.12], [1, 1.0]],
+                    bottom: [[0, .9], [1, .9]],
+                    width: [[0, .5], [.2, .66], [.5, .7], [.8, .64], [1, .45]] }),
+                tire: new THREE.CylinderGeometry(.38, .38, .34, 48).rotateX(Math.PI / 2),
+                rim: new THREE.CylinderGeometry(.28, .28, .35, 32).rotateX(Math.PI / 2),
+                lip: new THREE.TorusGeometry(.28, .025, 8, 40),
+                cap: new THREE.CylinderGeometry(.06, .06, .38, 16).rotateX(Math.PI / 2),
+                disc: new THREE.CylinderGeometry(.22, .22, .035, 32).rotateX(Math.PI / 2),
+                spoke: new THREE.BoxGeometry(.5, .04, .02),
+                exh: new THREE.CylinderGeometry(.055, .055, .22, 16).rotateZ(Math.PI / 2),
+                box: new THREE.BoxGeometry(1, 1, 1)
+            };
+
+            function plateTexture() {
+                const c = document.createElement('canvas'); c.width = 128; c.height = 40;
+                const g = c.getContext('2d'); g.fillStyle = '#0a0a0d'; g.fillRect(0, 0, 128, 40);
+                g.strokeStyle = '#d4af37'; g.lineWidth = 2; g.strokeRect(2, 2, 124, 36);
+                g.fillStyle = '#d4af37'; g.font = 'bold 22px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('AURA 01', 64, 21);
+                const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+            }
+            const PLATE = plateTexture();
+
+            const PARTS = { bodyMats: [], fade: [], accentMats: [], wheels: [], wire: [], internals: [], rimMats: [], scan: null };
+
+            function buildCar(alpha) {
+                const ghost = alpha < 1;
+                const group = new THREE.Group();
+                const std = (o) => ghost ? new THREE.MeshStandardMaterial(o) : new THREE.MeshPhysicalMaterial(Object.assign({ clearcoat: 1, clearcoatRoughness: .05 }, o));
+                const basic = (color, k) => { const c = lin(color); if (k) c.multiplyScalar(k); return new THREE.MeshBasicMaterial({ color: c, transparent: ghost, opacity: ghost ? alpha : 1 }); };
+                const reg = (m, base) => { if (ghost) { m.transparent = true; m.opacity = base * alpha; m.depthWrite = false; } PARTS.fade.push({ m: m, base: ghost ? base * alpha : base, ghost: ghost }); return m; };
+                const put = (mesh) => { if (ghost) mesh.renderOrder = 3; group.add(mesh); return mesh; };
+
+                const bodyMat = reg(std({ color: lin('#101017'), metalness: .88, roughness: .24, envMapIntensity: 1.5 }), 1);
+                PARTS.bodyMats.push(bodyMat);
+                const glassMat = reg(std({ color: lin('#04050a'), metalness: 1, roughness: .05, envMapIntensity: 1.8 }), 1);
+                const carbon = std({ color: lin('#08080b'), metalness: .6, roughness: .42, envMapIntensity: .8 });
+                const tireMat = std({ color: lin('#0b0b0d'), metalness: 0, roughness: .9 });
+                const rimMat = std({ color: lin('#d4af37'), metalness: 1, roughness: .2, envMapIntensity: 1.5 });
+                PARTS.rimMats.push(rimMat);
+                const spokeMat = std({ color: lin('#1a1a1f'), metalness: .9, roughness: .3 });
+                const discMat = std({ color: lin('#6c6c74'), metalness: 1, roughness: .35 });
+                const caliperMat = std({ color: lin('#b3122e'), metalness: .5, roughness: .35 });
+                const chrome = std({ color: lin('#c9ccd3'), metalness: 1, roughness: .18, envMapIntensity: 1.6 });
+                if (ghost) [carbon, tireMat, rimMat, spokeMat, discMat, caliperMat, chrome].forEach(m => { m.transparent = true; m.opacity = alpha; m.depthWrite = false; });
+
+                put(new THREE.Mesh(G.body, bodyMat));
+                put(new THREE.Mesh(G.cabin, glassMat));
+                put(new THREE.Mesh(G.roof, bodyMat));
+
+                const add = (geo, mat, sx, sy, sz, x, y, z, rz) => { const m = new THREE.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.position.set(x, y, z); if (rz) m.rotation.z = rz; return put(m); };
+                // aero: splitter, diffuser, ducktail wing, skirts, front intake
+                add(G.box, carbon, .5, .05, 1.78, 2.14, .13, 0);
+                add(G.box, carbon, .55, .09, 1.5, -2.12, .17, 0);
+                add(G.box, carbon, .05, .32, .05, -2.0, .84, .42);
+                add(G.box, carbon, .05, .32, .05, -2.0, .84, -.42);
+                add(G.box, carbon, .55, .035, 1.7, -2.05, 1.02, 0, -.06);
+                add(G.box, carbon, 2.3, .04, .1, -.05, .19, .79);
+                add(G.box, carbon, 2.3, .04, .1, -.05, .19, -.79);
+                add(G.box, carbon, .06, .12, .95, 2.22, .29, 0);
+                // mirrors
+                add(G.box, bodyMat, .17, .07, .2, .55, .84, .92);
+                add(G.box, bodyMat, .17, .07, .2, .55, .84, -.92);
+                // lights
+                const head = basic('#c9f6ff', 3), tail = basic('#ff2bd6', 3);
+                add(G.box, head, .16, .045, .38, 2.06, .42, .56, -.12);
+                add(G.box, head, .16, .045, .38, 2.06, .42, -.56, -.12);
+                add(G.box, head, .1, .02, .5, 2.12, .38, .28, -.1);
+                add(G.box, head, .1, .02, .5, 2.12, .38, -.28, -.1);
+                add(G.box, tail, .05, .06, 1.5, -2.22, .6, 0);
+                add(G.box, tail, .03, .025, 1.6, -2.36, 1.02, 0);
+                // exhausts
+                [[.3], [.5], [-.3], [-.5]].forEach(p => { add(G.exh, chrome, 1, 1, 1, -2.28, .22, p[0]); });
+                // plate
+                if (!ghost) {
+                    const pl = new THREE.Mesh(new THREE.PlaneGeometry(.4, .125), new THREE.MeshBasicMaterial({ map: PLATE }));
+                    pl.rotation.y = -Math.PI / 2; pl.position.set(-2.335, .37, 0); group.add(pl);
+                }
+                // side accent glow
+                const accentMat = basic('#8b5cf6', 2.2);
+                PARTS.accentMats.push(accentMat);
+                add(G.box, accentMat, 2.7, .02, .02, -.1, .3, .93);
+                add(G.box, accentMat, 2.7, .02, .02, -.1, .3, -.93);
+
+                // wheels
+                [[1.45, .9], [1.45, -.9], [-1.47, .9], [-1.47, -.9]].forEach(p => {
+                    const w = new THREE.Group();
+                    w.add(new THREE.Mesh(G.tire, tireMat));
+                    w.add(new THREE.Mesh(G.rim, rimMat));
+                    w.add(new THREE.Mesh(G.cap, rimMat));
+                    [.175, -.175].forEach(z => {
+                        const lip = new THREE.Mesh(G.lip, rimMat); lip.position.z = z; w.add(lip);
+                        for (let i = 0; i < 5; i++) { const s = new THREE.Mesh(G.spoke, spokeMat); s.position.z = z; s.rotation.z = i * Math.PI / 5; w.add(s); }
+                    });
+                    const ds = new THREE.Mesh(G.disc, discMat); ds.position.z = p[1] > 0 ? -.02 : .02; w.add(ds);
+                    if (ghost) w.traverse(o => { if (o.isMesh) o.renderOrder = 3; });
+                    const holder = new THREE.Group();
+                    holder.add(w);
+                    holder.position.set(p[0], .38, p[1]);
+                    // caliper stays static (does not spin)
+                    const cal = new THREE.Mesh(G.box, caliperMat); cal.scale.set(.2, .14, .05); cal.position.set(0, .2, p[1] > 0 ? .0 : .0); cal.position.z = p[1] > 0 ? -.03 : .03;
+                    if (ghost) cal.renderOrder = 3;
+                    holder.add(cal);
+                    group.add(holder);
+                    PARTS.wheels.push(w);
+                });
+
+                if (!ghost) {
+                    const wireMat = new THREE.MeshBasicMaterial({ color: lin('#38e8ff'), wireframe: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+                    group.add(new THREE.Mesh(G.body, wireMat), new THREE.Mesh(G.cabin, wireMat)); PARTS.wire.push(wireMat);
+
+                    const bat = new THREE.Mesh(G.box, new THREE.MeshStandardMaterial({ color: lin('#0d0f18'), metalness: .8, roughness: .35, emissive: lin('#3aa0ff'), emissiveIntensity: .25 }));
+                    bat.scale.set(2.6, .12, 1.25); bat.position.set(0, .27, 0);
+                    const gc = document.createElement('canvas'); gc.width = gc.height = 256;
+                    const gg = gc.getContext('2d'); gg.fillStyle = '#04070d'; gg.fillRect(0, 0, 256, 256); gg.strokeStyle = '#38e8ff'; gg.lineWidth = 2;
+                    for (let i = 0; i <= 256; i += 32) { gg.beginPath(); gg.moveTo(i, 0); gg.lineTo(i, 256); gg.stroke(); gg.beginPath(); gg.moveTo(0, i); gg.lineTo(256, i); gg.stroke(); }
+                    const gt = new THREE.CanvasTexture(gc); gt.encoding = THREE.sRGBEncoding; gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(4, 2);
+                    const cells = new THREE.Mesh(new THREE.PlaneGeometry(2.55, 1.2), new THREE.MeshBasicMaterial({ map: gt, transparent: true, opacity: .75, blending: THREE.AdditiveBlending, depthWrite: false }));
+                    cells.rotation.x = -Math.PI / 2; cells.position.set(0, .335, 0);
+                    const gold = new THREE.MeshStandardMaterial({ color: lin('#d4af37'), metalness: 1, roughness: .3, emissive: lin('#d4af37'), emissiveIntensity: .35 });
+                    const motorGeo = new THREE.CylinderGeometry(.17, .17, .5, 24).rotateX(Math.PI / 2), axleGeo = new THREE.CylinderGeometry(.03, .03, 1.7, 12).rotateX(Math.PI / 2);
+                    const items = [bat, cells];
+                    [1.45, -1.47].forEach(x => {
+                        const m = new THREE.Mesh(motorGeo, gold); m.position.set(x, .38, 0);
+                        const a = new THREE.Mesh(axleGeo, gold); a.position.set(x, .38, 0);
+                        items.push(m, a);
+                    });
+                    const frame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(3.7, .5, 1.5)), new THREE.LineBasicMaterial({ color: lin('#38e8ff'), transparent: true, opacity: .9 }));
+                    frame.position.set(0, .42, 0);
+                    const cage = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.9, .55, 1.15)), new THREE.LineBasicMaterial({ color: lin('#8b5cf6'), transparent: true, opacity: .9 }));
+                    cage.position.set(-.3, .85, 0);
+                    items.push(frame, cage);
+                    items.forEach(o => { o.visible = false; group.add(o); PARTS.internals.push(o); });
+
+                    const scan = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.5), new THREE.MeshBasicMaterial({ color: lin('#38e8ff'), transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+                    scan.rotation.y = Math.PI / 2; scan.position.y = .7; scan.visible = false;
+                    group.add(scan); PARTS.scan = scan;
+                }
+                return group;
+            }
+
+            const rig = new THREE.Group();
+            scene.add(rig);
+            const car = buildCar(1);
+            const mirror = buildCar(.2);
+            mirror.scale.y = -1;
+            rig.add(car, mirror);
+
+            /* ---------- realistic car model (GLB) with procedural fallback ----------
+               Para usar o seu próprio carro, coloque um arquivo "car.glb" ao lado do index.html.
+               Ele é tentado primeiro; se falhar, usa os modelos abaixo e, por fim, o carro procedural. */
+            const CAR_URLS = [
+                'car.glb',
+                'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/ferrari.glb',
+                'https://threejs.org/examples/models/gltf/ferrari.glb'
+            ];
+            const glb = { wheels: [], mirrorBody: [] };
+            rig.visible = false;
+            function showProcedural() { rig.visible = true; carSettled = true; }
+            function installModel(model) {
+                const bodyM = new THREE.MeshPhysicalMaterial({ color: lin('#101017'), metalness: .9, roughness: .3, clearcoat: 1, clearcoatRoughness: .03, envMapIntensity: 1.4 });
+                const rimM = new THREE.MeshStandardMaterial({ color: lin('#d4af37'), metalness: 1, roughness: .2, envMapIntensity: 1.5 });
+                const trimM = new THREE.MeshStandardMaterial({ color: lin('#c9ccd3'), metalness: 1, roughness: .22, envMapIntensity: 1.5 });
+                const glassM = new THREE.MeshPhysicalMaterial({ color: lin('#05060a'), metalness: .6, roughness: .04, envMapIntensity: 1.8, transparent: true, opacity: .6, depthWrite: false });
+                model.traverse(o => {
+                    if (!o.isMesh) return;
+                    const n = (o.name || '').toLowerCase();
+                    if (/glass/.test(n)) o.material = glassM;
+                    else if (/rim/.test(n)) o.material = rimM;
+                    else if (/trim/.test(n)) o.material = trimM;
+                    else if (/^body/.test(n)) o.material = bodyM;
+                    if (/^wheel_/.test(n) || /^wheel_/.test((o.parent && o.parent.name || '').toLowerCase())) { /* handled below */ }
+                });
+                const wheelNodes = [];
+                model.traverse(o => { if (/^wheel_(fl|fr|rl|rr)$/i.test(o.name || '')) wheelNodes.push(o); });
+
+                // orientação, escala (4,6 m de comprimento) e apoio no chão
+                const size0 = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+                const pivot = new THREE.Group(); pivot.add(model);
+                if (size0.z > size0.x) model.rotation.y = Math.PI / 2;
+                pivot.updateMatrixWorld(true);
+                let b = new THREE.Box3().setFromObject(pivot);
+                pivot.scale.setScalar(4.6 / b.getSize(new THREE.Vector3()).x);
+                pivot.updateMatrixWorld(true);
+                b = new THREE.Box3().setFromObject(pivot);
+                const c = b.getCenter(new THREE.Vector3());
+                pivot.position.set(-c.x, -b.min.y, -c.z);
+
+                // reflexo no piso
+                const mp = pivot.clone(true), holder = new THREE.Group();
+                mp.traverse(o => {
+                    if (!o.isMesh) return;
+                    const isBody = /^body/.test((o.name || '').toLowerCase());
+                    const m = new THREE.MeshBasicMaterial({ color: isBody ? lin('#101017') : lin('#15151b'), transparent: true, opacity: .16, depthWrite: false });
+                    if (isBody) glb.mirrorBody.push(m);
+                    o.material = m; o.renderOrder = 3;
+                });
+                holder.add(mp); holder.scale.y = -1; rig.add(holder);
+
+                // esconde o carro procedural (mantém apenas o interior do raio-X)
+                const keep = new Set(PARTS.internals.concat(PARTS.scan ? [PARTS.scan] : []));
+                car.children.forEach(ch => { if (!keep.has(ch)) ch.visible = false; });
+                mirror.visible = false;
+                PARTS.wire.length = 0; PARTS.wheels.length = 0;
+                PARTS.bodyMats.push(bodyM); PARTS.rimMats.push(rimM);
+                PARTS.fade.push({ m: bodyM, base: 1, ghost: false }, { m: glassM, base: .6, ghost: false });
+                glb.wheels = wheelNodes;
+                car.add(pivot);
+            }
+            const gltfLoader = THREE.GLTFLoader ? new THREE.GLTFLoader() : null;
+            if (gltfLoader && THREE.DRACOLoader) {
+                const draco = new THREE.DRACOLoader();
+                draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/');
+                gltfLoader.setDRACOLoader(draco);
+            }
+            function tryLoad(i) {
+                if (carSettled) return;
+                if (!gltfLoader || i >= CAR_URLS.length) { showProcedural(); return; }
+                gltfLoader.load(CAR_URLS[i], g => {
+                    if (carSettled) return;
+                    try { installModel(g.scene); rig.visible = true; carSettled = true; }
+                    catch (err) { console.warn('Modelo 3D falhou, tentando próximo', err); tryLoad(i + 1); }
+                }, undefined, () => tryLoad(i + 1));
+            }
+            tryLoad(0);
+            setTimeout(() => { if (!carSettled) showProcedural(); }, 9000);
+
+            const underMat = new THREE.MeshBasicMaterial({ map: GLOW, color: lin('#8b5cf6'), transparent: true, opacity: .75, blending: THREE.AdditiveBlending, depthWrite: false });
+            const under = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.2), underMat);
+            under.rotation.x = -Math.PI / 2; under.position.y = .02; under.renderOrder = 4;
+            rig.add(under);
+
+            (function makeFloor() {
+                const c = document.createElement('canvas'); c.width = c.height = 512;
+                const g = c.getContext('2d'), gr = g.createRadialGradient(256, 256, 0, 256, 256, 256);
+                gr.addColorStop(0, '#1e1e2b'); gr.addColorStop(.05, '#14141d'); gr.addColorStop(.14, '#0a0a0e'); gr.addColorStop(.24, '#070709'); gr.addColorStop(1, '#070709');
+                g.fillStyle = gr; g.fillRect(0, 0, 512, 512);
+                const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+                const floor = new THREE.Mesh(new THREE.CircleGeometry(60, 64), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, depthWrite: false }));
+                floor.rotation.x = -Math.PI / 2; floor.renderOrder = -10;
+                scene.add(floor);
+                const gridH = new THREE.GridHelper(80, 80, 0x2a2a3a, 0x15151d);
+                gridH.material.transparent = true; gridH.material.opacity = .35; gridH.material.depthWrite = false;
+                gridH.position.y = .004; gridH.renderOrder = -9;
+                scene.add(gridH);
+            })();
+
+            const ringMats = [];
+            [[2.7, 2.73, '#38e8ff', .55], [3.5, 3.52, '#8b5cf6', .4], [4.6, 4.61, '#ff3fd0', .25]].forEach((r, i) => {
+                const m = new THREE.MeshBasicMaterial({ color: lin(r[2]), transparent: true, opacity: r[3], blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+                const mesh = new THREE.Mesh(new THREE.RingGeometry(r[0], r[1], 128), m);
+                mesh.rotation.x = -Math.PI / 2; mesh.position.y = .012; mesh.renderOrder = 4;
+                scene.add(mesh); ringMats.push({ mesh: mesh, base: r[3], i: i });
+            });
+
+            const halo = new THREE.Group(), spin = new THREE.Group();
+            halo.add(spin); scene.add(halo);
+            const haloMats = [];
+            function gradColor(a) {
+                const t = (Math.cos(a - .8) + 1) / 2, m = lin('#ff3fd0'), v = lin('#8b5cf6'), c = lin('#38e8ff');
+                return t < .5 ? m.clone().lerp(v, t * 2) : v.clone().lerp(c, (t - .5) * 2);
+            }
+            (function makeHalo() {
+                function ring(R, tube, base) {
+                    const g = new THREE.TorusGeometry(R, tube, 6, 200), p = g.attributes.position, col = new Float32Array(p.count * 3);
+                    for (let i = 0; i < p.count; i++) { const c = gradColor(Math.atan2(p.getY(i), p.getX(i))); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
+                    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+                    const m = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: base, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+                    spin.add(new THREE.Mesh(g, m)); haloMats.push({ m: m, base: base });
+                }
+                ring(2.35, .028, .95); ring(2.75, .008, .5);
+                const pts = [], cols = [];
+                for (let i = 0; i < 110; i++) {
+                    const a = Math.random() * Math.PI * 2, r0 = 2.42, r1 = r0 + .08 + Math.random() * .38, c = gradColor(a);
+                    pts.push(Math.cos(a) * r0, Math.sin(a) * r0, 0, Math.cos(a) * r1, Math.sin(a) * r1, 0);
+                    cols.push(c.r, c.g, c.b, c.r, c.g, c.b);
+                }
+                const lg = new THREE.BufferGeometry();
+                lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); lg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+                const lm = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+                spin.add(new THREE.LineSegments(lg, lm)); haloMats.push({ m: lm, base: .55 });
+                const sm = new THREE.SpriteMaterial({ map: GLOW, color: lin('#8b5cf6'), transparent: true, opacity: .4, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+                const sp = new THREE.Sprite(sm); sp.scale.set(11, 11, 1); halo.add(sp);
+                haloMats.push({ m: sm, base: .4, glow: true });
+            })();
+            const haloGlow = haloMats[haloMats.length - 1];
+
+            const N = isMobile ? 380 : 950, pPos = new Float32Array(N * 3), pSpeed = new Float32Array(N);
+            for (let i = 0; i < N; i++) {
+                pPos[i * 3] = (Math.random() - .5) * 30; pPos[i * 3 + 1] = Math.random() * 9; pPos[i * 3 + 2] = (Math.random() - .5) * 30;
+                pSpeed[i] = .08 + Math.random() * .25;
+            }
+            const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({ size: .07, map: GLOW, color: lin('#d9c58a'), transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
+            const particles = new THREE.Points(pGeo, pMat); scene.add(particles);
+
+            const key = new THREE.DirectionalLight(0xffffff, .55); key.position.set(5, 8, 4); scene.add(key);
+            const light1 = new THREE.PointLight(0x38e8ff, 2.2, 22); light1.position.set(-4, 2.2, 3.5); scene.add(light1);
+            const light2 = new THREE.PointLight(0xff3fd0, 2.2, 22); light2.position.set(4.5, 2.2, -3.5); scene.add(light2);
+
+            /* themes */
+            const mk = (body, accent, l1, l2) => ({ body: lin(body), accent: lin(accent), l1: lin(l1), l2: lin(l2) });
+            const THEME_DEF = mk('#101017', '#8b5cf6', '#38e8ff', '#ff3fd0');
+            const THEME_ENG = mk('#0d1a24', '#38e8ff', '#38e8ff', '#8b5cf6');
+            const THEME_MODES = MODES.map(m => mk(m.body, m.accent, m.l1, m.l2));
+            const cfgBodyC = lin(CFG.body), rimTarget = lin(CFG.rim), rimC = rimTarget.clone();
+            const THEME_CFG = { body: cfgBodyC, accent: THEME_DEF.accent, l1: lin('#ffe9b0'), l2: lin('#8b5cf6') };
+            const bodyC = THEME_DEF.body.clone(), accentC = THEME_DEF.accent.clone(), l1C = THEME_DEF.l1.clone(), l2C = THEME_DEF.l2.clone();
+            carCards.forEach(c => cardColors.set(c, lin(c.dataset.color)));
+            let hoverBody = null;
+            carCards.forEach(c => {
+                c.addEventListener('pointerenter', () => { hoverBody = cardColors.get(c); c.style.setProperty('--card-glow', c.dataset.color + 'aa'); });
+                c.addEventListener('pointerleave', () => { hoverBody = null; });
+            });
+
+            /* camera keys, one per section */
+            const FIELDS = ['cx', 'cy', 'cz', 'lx', 'ly', 'lz', 'ry', 'sx', 'sy', 'halo', 'xray', 'exp'];
+            const kf = o => Object.assign({ lx: 0, ly: .8, lz: 0, sx: 0, sy: 0, halo: .5, xray: 0, exp: .8 }, o);
+            const BASE = [
+                kf({ cx: 4.6, cy: 1.35, cz: 6.6, ly: .75, ry: -.55, sy: .11, halo: 1, exp: 1.15 }),           // hero
+                kf({ cx: -3.2, cy: 1.5, cz: 8.6, ry: .85, sx: .13, halo: .35, exp: .7 }),                     // sobre
+                kf({ cx: 0, cy: 1.6, cz: 12.5, ly: .9, ry: .1, sy: -.04, halo: .22, exp: .55 }),              // colecao
+                kf({ cx: 4.8, cy: 1.3, cz: 6.2, ry: -.5, sx: -.165, halo: .9, exp: 1.2 }),                    // configurador
+                kf({ cx: 4.8, cy: 1.3, cz: 6.2, ry: -.35, sx: -.165, halo: .9, exp: 1.2 }),                   // experiencia
+                kf({ cx: .5, cy: 2.4, cz: 7.4, ly: .6, ry: .2, sx: .2, sy: .02, halo: .45, xray: 1, exp: 1.05 }), // diferenciais
+                kf({ cx: -4.2, cy: 1.1, cz: 6.8, ly: .9, ry: .4, sx: .15, sy: .02, halo: .7, exp: .75 }),     // servicos
+                kf({ cx: 0, cy: 2.2, cz: 11, ry: .5, sy: -.03, halo: .25, exp: .5 }),                         // processo
+                kf({ cx: -4.6, cy: 1.3, cz: 6.3, ry: .5, sx: .165, halo: .85, exp: 1.1 }),                    // simulador
+                kf({ cx: 2, cy: 1.8, cz: 11.5, ry: -.2, halo: .2, exp: .45 }),                                // galeria
+                kf({ cx: 0, cy: 1.4, cz: 10, ry: 1.2, halo: .3, exp: .5 }),                                   // faq
+                kf({ cx: -4.2, cy: 1.1, cz: 6.8, ly: .9, ry: .4, sy: .16, halo: .9, exp: .8 })                // contato
+            ];
+            let KEYS = BASE;
+            function adapt() {
+                const asp = W / H, z = asp < 1.2 ? 1 + (1.2 - asp) * 1.5 : 1, portrait = asp < 1;
+                KEYS = BASE.map((k, i) => {
+                    const o = Object.assign({}, k);
+                    o.cx = k.lx + (k.cx - k.lx) * z; o.cy = k.ly + (k.cy - k.ly) * z; o.cz = k.lz + (k.cz - k.lz) * z;
+                    if (portrait) {
+                        if (o.sx !== 0) { o.sx = 0; o.exp = Math.min(o.exp, .6); }
+                        if (i === S.configurador || i === S.experiencia) o.sy = -.13;
+                        if (i === S.diferenciais) { o.sy = -.12; o.exp = .8; }
+                        if (i === S.hero) o.sy = .05;
+                        if (i === S.simulador || i === S.servicos || i === S.sobre) o.exp = .45;
+                    }
+                    return o;
+                });
+            }
+            const cur = Object.assign({}, BASE[0]);
+            const sm = t => t * t * (3 - 2 * t);
+            function targetFor(y) {
+                const out = Object.assign({}, KEYS[0]);
+                for (let i = 0; i < KEYS.length - 1; i++) {
+                    const a = tops[i + 1] - vh, b = tops[i + 1] - vh * .1;
+                    const t = sm(Math.max(0, Math.min(1, (y - a) / (b - a))));
+                    if (t > 0) FIELDS.forEach(f => { out[f] += (KEYS[i + 1][f] - out[f]) * t; });
+                }
+                return out;
+            }
+
+            /* drag to rotate in stage sections */
+            let userRot = 0, dragVel = 0, dragging = false, lastX = 0;
+            $$('.stage').forEach(st => st.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; dragVel = 0; }));
+            window.addEventListener('pointermove', e => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; userRot += dx * .01; dragVel = dx * .01; });
+            window.addEventListener('pointerup', () => { dragging = false; });
+
+            function resize() {
+                measure();
+                renderer.setSize(W, H, false);
+                camera.aspect = W / H;
+                adapt();
+                onScrollUI();
+            }
+            window.addEventListener('resize', resize);
+            if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); onScrollUI(); }).observe(document.body);
+            resize();
+
+            let lastXray = -1;
+            function applyXray(x) {
+                if (Math.abs(x - lastXray) < .002) return;
+                lastXray = x;
+                PARTS.fade.forEach(f => {
+                    const o = f.base * (1 - x * .88);
+                    f.m.opacity = o;
+                    if (!f.ghost) { const tr = o < .995; if (f.m.transparent !== tr) { f.m.transparent = tr; f.m.needsUpdate = true; } f.m.depthWrite = o > .6; }
+                });
+                PARTS.wire.forEach(m => { m.opacity = x * .3; });
+                const vis = x > .02;
+                PARTS.internals.forEach(o => { o.visible = vis; });
+                if (PARTS.scan) PARTS.scan.visible = vis;
+            }
+
+            let t = 0, last = performance.now(), lastY = window.scrollY, vel = 0, spinA = 0;
+            function frame(now) {
+                requestAnimationFrame(frame);
+                const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt;
+                const y = window.scrollY;
+                vel += ((y - lastY) / Math.max(dt, .001) - vel) * Math.min(1, dt * 6); lastY = y;
+                mouse.sx += (mouse.x - mouse.sx) * Math.min(1, dt * 3); mouse.sy += (mouse.y - mouse.sy) * Math.min(1, dt * 3);
+
+                if (fine) {
+                    cur2.x += (cur2.tx - cur2.x) * Math.min(1, dt * 12); cur2.y += (cur2.ty - cur2.y) * Math.min(1, dt * 12);
+                    circle.style.left = cur2.x + 'px'; circle.style.top = cur2.y + 'px';
+                }
+                $$('[data-depth]').forEach(el => { const d = +el.dataset.depth; el.style.transform = 'translate3d(' + (mouse.sx * d).toFixed(2) + 'px,' + (mouse.sy * d * .6).toFixed(2) + 'px,0)'; });
+
+                const tg = targetFor(y), k = 1 - Math.exp(-dt * (reduced ? 30 : 3.4));
+                FIELDS.forEach(f => { cur[f] += (tg[f] - cur[f]) * k; });
+
+                // configurator colors
+                if (CFG.dirty) { cfgBodyC.set(CFG.body).convertSRGBToLinear(); rimTarget.set(CFG.rim).convertSRGBToLinear(); CFG.dirty = false; }
+
+                const sec = sectionAt(y + vh * .5);
+                const th = sec === S.experiencia ? THEME_MODES[activeMode] : sec === S.diferenciais ? THEME_ENG : sec === S.configurador ? THEME_CFG : THEME_DEF;
+                const kc = 1 - Math.exp(-dt * 4);
+                bodyC.lerp(hoverBody && sec === S.colecao ? hoverBody : th.body, kc);
+                accentC.lerp(th.accent, kc); l1C.lerp(th.l1, kc); l2C.lerp(th.l2, kc);
+                rimC.lerp(rimTarget, kc);
+                PARTS.bodyMats.forEach(m => m.color.copy(bodyC));
+                PARTS.rimMats.forEach(m => m.color.copy(rimC));
+                PARTS.accentMats.forEach(m => m.color.copy(accentC).multiplyScalar(2.2));
+                underMat.color.copy(accentC);
+                haloGlow.m.color.copy(accentC);
+                light1.color.copy(l1C); light2.color.copy(l2C);
+                pMat.color.copy(accentC).lerp(new THREE.Color(1, 1, 1), .55);
+
+                camera.position.set(cur.cx + mouse.sx * .8, cur.cy - mouse.sy * .4, cur.cz);
+                camera.lookAt(cur.lx, cur.ly, cur.lz);
+                camera.setViewOffset(W, H, -cur.sx * W, -cur.sy * H, W, H);
+
+                const stageSec = sec === S.experiencia || sec === S.configurador;
+                if (!stageSec) { userRot += (0 - userRot) * Math.min(1, dt * 2); }
+                if (!dragging) { userRot += dragVel; dragVel *= .94; }
+                const sway = reduced ? 0 : Math.sin(t * .35) * .16 * (1 - cur.xray * .75);
+                rig.rotation.y = cur.ry + sway + userRot + mouse.sx * .2;
+                spinA += ((reduced ? 0 : .8) + Math.abs(vel) * .012) * dt;
+                PARTS.wheels.forEach(w => { w.rotation.z = -spinA; });
+                glb.wheels.forEach(w => { w.rotation.x = spinA; });
+                glb.mirrorBody.forEach(m => m.color.copy(bodyC));
+                applyXray(cur.xray);
+                if (PARTS.scan && PARTS.scan.visible) {
+                    PARTS.scan.position.x = Math.sin(t * .9) * 2.1;
+                    PARTS.scan.material.opacity = cur.xray * (.18 + .1 * Math.sin(t * 6));
+                }
+                under.material.opacity = .55 + .2 * Math.sin(t * 1.6);
+
+                const dx = -camera.position.x, dz = -camera.position.z, dl = Math.hypot(dx, dz) || 1;
+                halo.position.set(dx / dl * 2.6, 1.2, dz / dl * 2.6);
+                halo.lookAt(camera.position);
+                spin.rotation.z = t * .06 + y * .0005;
+                haloMats.forEach(h => { h.m.opacity = h.base * cur.halo; });
+                ringMats.forEach(r => { const s = 1 + Math.sin(t * 1.4 + r.i) * .015; r.mesh.scale.set(s, s, 1); r.mesh.material.opacity = r.base * (.5 + .5 * cur.halo); });
+
+                const pa = pGeo.attributes.position.array;
+                for (let i = 0; i < N; i++) { pa[i * 3 + 1] += pSpeed[i] * dt; if (pa[i * 3 + 1] > 9) pa[i * 3 + 1] = 0; }
+                pGeo.attributes.position.needsUpdate = true;
+                particles.rotation.y = t * .012 + mouse.sx * .08;
+
+                renderer.toneMappingExposure = cur.exp;
+                renderer.render(scene, camera);
+            }
+            requestAnimationFrame(frame);
+            return true;
+        }
+
+        /* =====================================================
+           LOADER → READY
+        ===================================================== */
+        (function loader() {
+            const count = $('#loaderCount'), bar = $('#loaderBar');
+            const t0 = performance.now(), MIN = reduced ? 300 : 2000;
+            let loaded = document.readyState === 'complete', finished = false;
+            window.addEventListener('load', () => { loaded = true; });
+            function finish() {
+                if (finished) return; finished = true;
+                const l = $('#loader');
+                l.classList.add('done');
+                document.body.classList.remove('loading');
+                document.body.classList.add('ready');
+                measure(); onScrollUI();
+                startObservers();
+                $('#heroTitle').classList.add('in');
+                setTimeout(() => { l.style.display = 'none'; }, 1300);
+            }
+            (function tick(now) {
+                const p = Math.min(1, (now - t0) / MIN);
+                const shown = (loaded && carSettled) ? p : Math.min(p, .92);
+                count.textContent = String(Math.round(shown * 100)).padStart(3, '0');
+                bar.style.transform = 'scaleX(' + shown + ')';
+                if (p >= 1 && ((loaded && carSettled) || now - t0 > 9500)) { count.textContent = '100'; bar.style.transform = 'scaleX(1)'; setTimeout(finish, 250); return; }
+                requestAnimationFrame(tick);
+            })(t0);
+        })();
+
+        /* Marquee */
+        (function marquee() {
+            const r1 = $('#mq1'), r2 = $('#mq2');
+            let t = 0, last = performance.now();
+            (function loop(now) {
+                requestAnimationFrame(loop);
+                const dt = Math.min(.05, (now - last) / 1000); last = now; if (!reduced) t += dt;
+                const unit = r1.scrollWidth / 4;
+                if (!unit) return;
+                const d = (window.scrollY * .45 + t * 40) % unit;
+                r1.style.transform = 'translate3d(' + (-d) + 'px,0,0)';
+                r2.style.transform = 'translate3d(' + (-unit + d) + 'px,0,0)';
+            })(last);
+        })();
+
+        applyFilters();
+    })();
     </script>
 </body>
 </html>
