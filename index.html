@@ -67,19 +67,19 @@
 
         /* ---------- Cursor ---------- */
         @media (pointer: fine) {
-            body { cursor: none; }
-            a, button, select, input, label, summary { cursor: none; }
-            .cursor-dot, .cursor-circle { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 20000; }
-            .cursor-dot { width: 8px; height: 8px; background: var(--accent); transition: width .2s, height .2s, opacity .2s; }
-            .cursor-circle { width: 44px; height: 44px; border: 1px solid rgba(212,175,55,.4); display: flex; align-items: center; justify-content: center; transition: width .35s var(--ease), height .35s var(--ease), border-color .3s, background .3s; }
-            .cursor-circle span { font-size: 9px; letter-spacing: .25em; color: #fff; opacity: 0; transition: opacity .25s; font-weight: 600; }
-            body.hovering .cursor-dot { width: 4px; height: 4px; background: #fff; }
-            body.hovering .cursor-circle { width: 64px; height: 64px; border-color: var(--accent); background: rgba(212,175,55,.06); }
-            body.labeled .cursor-dot { opacity: 0; }
-            body.labeled .cursor-circle { width: 92px; height: 92px; border-color: var(--accent); background: rgba(212,175,55,.14); }
-            body.labeled .cursor-circle span { opacity: 1; }
+            body { cursor: none !important; }
+            a, button, select, input, label, summary, .interactive-element, [data-cursor] { cursor: none !important; }
+            .cursor-circle { position: fixed; top: 0; left: 0; width: 58px; height: 58px; transform: translate(-50%, -50%); border: 1px solid rgba(212,175,55,.8); border-radius: 50%; background: rgba(7,7,9,.88); box-shadow: 0 0 24px rgba(212,175,55,.28), inset 0 0 14px rgba(212,175,55,.08); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 20000; transition: width .35s var(--ease), height .35s var(--ease), border-color .3s, background .3s, box-shadow .3s; }
+            .cursor-car { flex: none; width: 38px; height: 28px; fill: none; stroke: #f6dc7e; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(212,175,55,.8)); transition: transform .3s var(--ease), opacity .25s; }
+            .cursor-circle span { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; font-size: 9px; letter-spacing: .25em; color: #fff; opacity: 0; transition: opacity .25s; font-weight: 600; }
+            body.hovering .cursor-circle { width: 122px; height: 52px; gap: 8px; border-radius: 26px; border-color: #f6dc7e; background: rgba(7,7,9,.96); box-shadow: 0 0 32px rgba(212,175,55,.42); }
+            body.hovering .cursor-car { width: 32px; height: 24px; transform: scale(1.08); }
+            body.hovering:not(.labeled) .cursor-circle::after { content: 'CLIQUE'; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .16em; white-space: nowrap; }
+            body.labeled .cursor-circle { width: 132px; height: 52px; gap: 8px; border-radius: 26px; border-color: var(--accent); background: rgba(7,7,9,.94); }
+            body.labeled .cursor-car { width: 32px; height: 24px; }
+            body.labeled .cursor-circle span { position: static; transform: none; opacity: 1; }
         }
-        @media (pointer: coarse) { .cursor-dot, .cursor-circle { display: none; } }
+        @media (pointer: coarse) { .cursor-circle { display: none; } }
 
         /* ---------- Nav ---------- */
         #navbar { background: rgba(7,7,9,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.06); transition: transform .6s var(--ease); }
@@ -115,7 +115,7 @@
         .reveal { opacity: 0; transform: translateY(40px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
         .reveal.active { opacity: 1; transform: none; }
         .sec-title { font-family: 'Cinzel', serif; font-weight: 600; }
-        .lead { color: #8e8e99; font-weight: 300; line-height: 1.75; }
+        .lead { color: #fff; font-weight: 300; line-height: 1.75; text-shadow: 0 1px 8px rgba(0,0,0,.95); }
         .dim { background: linear-gradient(180deg, rgba(7,7,9,0), rgba(7,7,9,.72) 10%, rgba(7,7,9,.72) 90%, rgba(7,7,9,0)); }
         .panel { background: rgba(14,14,19,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.08); border-radius: 22px; padding: 1.6rem; }
         .panel h3 { font-family: 'Cinzel', serif; font-weight: 600; }
@@ -219,12 +219,26 @@
         .stage .c { position: absolute; width: 22px; height: 22px; border: 1px solid var(--accent); opacity: .8; }
         .stage .tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; } .stage .tr { top: 14px; right: 14px; border-left: 0; border-bottom: 0; }
         .stage .bl { bottom: 14px; left: 14px; border-right: 0; border-top: 0; } .stage .br { bottom: 14px; right: 14px; border-left: 0; border-top: 0; }
-        .hud-top { position: absolute; top: 26px; left: 42px; right: 42px; display: flex; justify-content: space-between; gap: 1rem; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: #8e8e99; }
+        .hud-top { position: absolute; top: 26px; left: 42px; right: 42px; display: flex; justify-content: space-between; gap: 1rem; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.95); }
+        .view-toggle { position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 3; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(7,7,9,.86); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .view-toggle button { padding: 9px 15px; border-radius: 999px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: #b5b5bf; white-space: nowrap; transition: background .3s, color .3s; }
+        .view-toggle button.on { background: var(--accent); color: #000; }
+.chat { max-width: 460px; margin-inline: auto; width: 100%; border-radius: 22px; padding: 1.8rem 1.6rem 1.4rem; background: rgba(14,14,19,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.08); }
+        .chat-name { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.05rem; }
+        .chat-role { color: var(--accent); font-size: 10px; letter-spacing: .28em; text-transform: uppercase; margin-top: .3rem; }
+        .chat-body { margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid rgba(255,255,255,.08); }
+        .bubble { color: #cfcfd6; font-size: .88rem; line-height: 1.8; font-weight: 300; margin-bottom: 1.2rem; }
+        .chat-opt { display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 15px 2px; border-top: 1px solid rgba(255,255,255,.07); font-size: .85rem; transition: color .3s, padding .4s var(--ease); }
+        .chat-opt:last-child { border-bottom: 1px solid rgba(255,255,255,.07); }
+        .chat-opt b { font-family: 'Cinzel', serif; font-weight: 600; color: var(--accent); font-size: .8rem; letter-spacing: .1em; }
+        .chat-opt::after { content: '→'; margin-left: auto; color: var(--accent); opacity: 0; transform: translateX(-8px); transition: all .4s var(--ease); }
+        .chat-opt:hover { color: var(--accent); padding-left: 10px; }
+        .chat-opt:hover::after { opacity: 1; transform: none; }
         .drag-hint { position: absolute; top: 68px; left: 50%; z-index: 2; display: flex; align-items: center; gap: 10px; transform: translateX(-50%); padding: 9px 14px; border: 1px solid rgba(212,175,55,.65); border-radius: 999px; background: rgba(7,7,9,.82); box-shadow: 0 0 26px rgba(212,175,55,.18); color: #f3d978; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; pointer-events: none; backdrop-filter: blur(8px); }
         .drag-hint svg { width: 22px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; animation: dragCue 1.8s ease-in-out infinite; }
         @keyframes dragCue { 50% { transform: translateX(4px); } }
         .hud-bars { position: absolute; left: 42px; right: 42px; bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
-        .hud-bars div { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8e8e99; }
+        .hud-bars div { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.95); }
         .hud-bars i { display: block; margin-top: 8px; height: 2px; background: rgba(255,255,255,.1); position: relative; overflow: hidden; }
         .hud-bars i b { position: absolute; inset: 0; width: var(--v, 50%); background: var(--mode, var(--accent)); transition: width 1.2s var(--ease), background .6s; box-shadow: 0 0 12px var(--mode, var(--accent)); }
         .stage-fallback { display: none; position: absolute; inset: 0; border-radius: 26px; object-fit: cover; width: 100%; height: 100%; opacity: .6; }
@@ -303,7 +317,7 @@
         .faq summary::-webkit-details-marker { display: none; }
         .faq summary::after { content: '+'; font-size: 1.5rem; color: var(--accent); transition: transform .4s var(--ease); flex-shrink: 0; }
         .faq details[open] summary::after { transform: rotate(45deg); }
-        .faq details p { color: #8e8e99; font-size: .85rem; line-height: 1.8; font-weight: 300; margin-top: .9rem; max-width: 60ch; }
+        .faq details p { color: #cbbd8a; font-size: .85rem; line-height: 1.8; font-weight: 300; margin-top: .9rem; max-width: 60ch; }
 
         /* ---------- Contato ---------- */
         #contato { background: linear-gradient(180deg, rgba(7,7,9,.5), rgba(0,0,0,.9) 45%, #000); }
@@ -367,8 +381,7 @@
     <canvas id="gl" aria-hidden="true"></canvas>
     <div class="vignette"></div>
     <div class="grain"></div>
-    <div class="cursor-dot"></div>
-    <div class="cursor-circle"><span></span></div>
+    <div class="cursor-circle" aria-hidden="true"><svg class="cursor-car" viewBox="0 0 48 32"><path d="M5 21h3l2-7a4 4 0 0 1 3.8-3h20.4a4 4 0 0 1 3.8 3l2 7h3v4H5z"/><path d="m13 11 3-5h15l4 5M8 18h4m24 0h4"/><circle cx="14" cy="24" r="3"/><circle cx="34" cy="24" r="3"/></svg><span></span></div>
     <div id="toast" role="status" aria-live="polite"></div>
 
     <!-- NAV -->
@@ -442,7 +455,7 @@
         <!-- HERO -->
         <header id="hero" class="relative min-h-[100svh] flex flex-col justify-between px-6 md:px-12 pt-28 pb-10">
             <div class="text-center" data-depth="14">
-                <p role="note" class="mx-auto mb-7 max-w-xl rounded-md border border-brand-gold/50 bg-brand-bg/75 px-4 py-2.5 text-xs leading-relaxed text-brand-textPrimary backdrop-blur-md"><span class="font-semibold text-brand-gold">Aviso: este não é um site real; é um projeto de portfólio.</span> <a href="https://www.instagram.com/_samusantana_/" target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-gold underline decoration-brand-gold/50 underline-offset-4 hover:text-white transition-colors interactive-element">Criado por mim</a>.</p>
+                <p role="note" class="mx-auto mb-7 max-w-xl rounded-md border border-brand-gold/50 bg-brand-bg/75 px-4 py-2.5 text-xs leading-relaxed text-brand-textPrimary backdrop-blur-md"><span class="font-semibold text-brand-gold">Aviso: este não é um site real; é um projeto de portfólio.</span> <a href="https://github.com/Sah123campos" target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-gold underline decoration-brand-gold/50 underline-offset-4 hover:text-white transition-colors interactive-element">Criado por Samuel Santana</a>.</p>
                 <span class="eyebrow hero-fade mb-6">Atelier Automotivo de Alta Costura</span>
                 <h1 data-split class="grad" id="heroTitle">PERFEIÇÃO EM<br>CADA DETALHE</h1>
                 <div class="hero-badges hero-fade">
@@ -554,7 +567,11 @@
                     <div class="stage lg:col-span-6 h-[46vh] lg:h-[70vh] lg:sticky lg:top-24" data-cursor="ARRASTE">
                         <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
                         <div class="hud-top"><span id="cfgHud">AURA Grand Voyager</span></div>
-                        <div class="drag-hint" aria-hidden="true"><svg viewBox="0 0 24 14"><path d="M7 2 2 7l5 5M2 7h20m-5-5 5 5-5 5"/></svg><span>Arraste para girar</span></div>
+                        <div class="drag-hint" aria-hidden="true"><svg viewBox="0 0 24 14"><path d="M7 2 2 7l5 5M2 7h20m-5-5 5 5-5 5"/></svg><span>Arraste: girar e inclinar</span></div>
+                        <div class="view-toggle" id="viewToggle" role="group" aria-label="Ponto de vista">
+                            <button type="button" data-view="ext" class="on interactive-element">Exterior</button>
+                            <button type="button" data-view="int" class="interactive-element">Interior · vista de cima</button>
+                        </div>
                         <div class="hud-bars" style="grid-template-columns:1fr 1fr">
                             <div>Cor<span class="block mt-2 text-white normal-case tracking-normal text-xs" id="cfgHudColor">Preto Obsidiana</span></div>
                             <div>Rodas<span class="block mt-2 text-white normal-case tracking-normal text-xs" id="cfgHudWheel">Ouro Polido</span></div>
@@ -755,12 +772,38 @@
                         <div><label class="lbl" for="fName">Nome</label><input class="field" id="fName" type="text" placeholder="Seu nome completo" autocomplete="name"><p class="err">Informe seu nome.</p></div>
                         <div><label class="lbl" for="fPhone">WhatsApp</label><input class="field" id="fPhone" type="tel" placeholder="(19) 90000-0000" autocomplete="tel"><p class="err">Informe um telefone válido.</p></div>
                         <div><label class="lbl" for="fModel">Modelo de interesse</label><select class="field" id="fModel"></select></div>
-                        <div><label class="lbl" for="fDate">Data preferida</label><input class="field" id="fDate" type="date"></div>
+                        <div><label class="lbl" for="fDate">Data preferida</label><input class="field" id="fDate" type="date"><p class="err" id="fDateErr">Escolha uma data a partir de hoje (até 2 anos).</p></div>
                         <div class="sm:col-span-2"><label class="lbl" for="fPeriod">Período</label>
                             <select class="field" id="fPeriod"><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
                         <div class="sm:col-span-2"><label class="lbl" for="fMsg">Mensagem (opcional)</label><textarea class="field" id="fMsg" rows="3" placeholder="Conte o que procura, cores, prazos, dúvidas..."></textarea></div>
                         <div class="sm:col-span-2"><button type="submit" class="btn-wa interactive-element w-full">Enviar solicitação</button></div>
                     </form>
+                </div>
+
+                <div class="mt-28 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center" id="dev">
+                    <div class="lg:col-span-6 space-y-5 text-center lg:text-left">
+                        <span class="eyebrow">Desenvolvimento web</span>
+                        <h3 class="sec-title text-2xl md:text-5xl leading-tight">Quer um site como este para o seu negócio?</h3>
+                        <p class="lead text-sm max-w-lg mx-auto lg:mx-0">Este site foi criado pelo Samuel, desenvolvedor de sites e sistemas. Se você gostou do que viu aqui, fale direto comigo e vamos desenhar algo do seu tamanho: institucional, loja, sistema sob medida ou manutenção do que você já tem.</p>
+                        <ul class="space-y-3 text-sm text-brand-textSecondary font-light inline-block text-left">
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Sites modernos, rápidos e responsivos</li>
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Animações e visual premium sob medida</li>
+                            <li class="flex gap-3"><span class="text-brand-gold">✦</span> Orçamento sem compromisso</li>
+                        </ul>
+                    </div>
+                    <div class="lg:col-span-6">
+                        <div class="chat" id="devChat">
+                            <div><div class="chat-name">Samuel</div><div class="chat-role">Sites e Sistemas</div></div>
+                            <div class="chat-body">
+                                <p class="bubble">Olá! 👋 Que bom ter você aqui.<br>Sou o Samuel, desenvolvedor de sites e sistemas. Como posso te ajudar hoje?</p>
+                                <button type="button" class="chat-opt interactive-element" data-o="1"><b>01</b> Quero um site para minha empresa</button>
+                                <button type="button" class="chat-opt interactive-element" data-o="2"><b>02</b> Quero um orçamento</button>
+                                <button type="button" class="chat-opt interactive-element" data-o="3"><b>03</b> Ver exemplos de trabalhos</button>
+                                <button type="button" class="chat-opt interactive-element" data-o="4"><b>04</b> Suporte / manutenção</button>
+                                <button type="button" class="chat-opt interactive-element" data-o="5"><b>05</b> Falar direto comigo</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -781,6 +824,7 @@
                             <li><a href="#servicos" class="hover:text-white transition-colors interactive-element">Serviços</a></li>
                             <li><a href="#simulador" class="hover:text-white transition-colors interactive-element">Simulador</a></li>
                             <li><a href="#faq" class="hover:text-white transition-colors interactive-element">Perguntas</a></li>
+                            <li><a href="#dev" class="hover:text-white transition-colors interactive-element">Criar meu site</a></li>
                         </ul>
                     </div>
                     <div>
@@ -849,9 +893,12 @@
             { n: 'Prata Diamantada', h: '#c9ccd3', p: 9000 }, { n: 'Preto Fosco', h: '#141416', p: 8000 }
         ];
         const INTERIORS = [
-            { n: 'Couro Preto & Ouro', p: 0 }, { n: 'Couro Creme & Nogueira', p: 24000 },
-            { n: 'Alcantara Vermelho', p: 19000 }, { n: 'Fibra de Carbono Aparente', p: 38000 }
+            { n: 'Couro Preto & Ouro', p: 0, seat: '#17171d', dash: '#101014', trim: '#d4af37', stitch: '#d4af37', carpet: '#0b0b0e', glow: '#d4af37', metal: 1, rough: .5 },
+            { n: 'Couro Creme & Nogueira', p: 24000, seat: '#dccca8', dash: '#c9b790', trim: '#6b4526', stitch: '#7a5a30', carpet: '#2b221a', glow: '#ffd9a0', metal: 0, rough: .45 },
+            { n: 'Alcantara Vermelho', p: 19000, seat: '#9a1027', dash: '#1b0a0e', trim: '#c9ccd3', stitch: '#ff3a4a', carpet: '#1b0a0e', glow: '#ff3040', metal: 1, rough: .95 },
+            { n: 'Fibra de Carbono Aparente', p: 38000, seat: '#0e0e13', dash: '#8d8d98', trim: '#a4a4b0', stitch: '#38e8ff', carpet: '#0a0a0d', glow: '#38e8ff', metal: .4, rough: .4, carbon: true }
         ];
+        const VIEW = { pitchGoal: 0, ui: 0 };
         const PACKS = [
             { n: 'Blindagem N3-A', p: 180000 }, { n: 'Teto Solar Panorâmico', p: 26000 },
             { n: 'Som Bespoke 3D', p: 45000 }, { n: 'Piloto Autônomo N4', p: 60000 }
@@ -1159,7 +1206,7 @@
             $('#cfgHudColor').textContent = COLORS[CFG.color].n;
             $('#cfgHudWheel').textContent = WHEELS[CFG.wheel].n;
             $('#cfgTotal').textContent = BRL(cfgTotal());
-            CFG.body = COLORS[CFG.color].h; CFG.rim = WHEELS[CFG.wheel].h; CFG.dirty = true;
+            CFG.body = COLORS[CFG.color].h; CFG.rim = WHEELS[CFG.wheel].h; CFG.dirty = true; CFG.intDirty = true;
         }
         function setCfgModel(i) { CFG.model = i; cfgRender(); }
         function cfgSummary() {
@@ -1171,7 +1218,7 @@
             if (m) CFG.model = +m.dataset.m;
             else if (c) CFG.color = +c.dataset.c;
             else if (w) CFG.wheel = +w.dataset.w;
-            else if (it) CFG.interior = +it.dataset.i;
+            else if (it) { CFG.interior = +it.dataset.i; VIEW.pitchGoal = 1.05; }
             else if (p) { const k = +p.dataset.p; if (CFG.packs.has(k)) CFG.packs.delete(k); else CFG.packs.add(k); }
             else return;
             cfgRender();
@@ -1183,6 +1230,14 @@
             else toast('Copiar não é suportado neste navegador.');
         });
         cfgRender();
+        (function viewToggle() {
+            const box = $('#viewToggle'); if (!box) return;
+            box.addEventListener('pointerdown', e => e.stopPropagation());
+            box.addEventListener('click', e => {
+                const b = e.target.closest('[data-view]'); if (!b) return;
+                VIEW.pitchGoal = b.dataset.view === 'int' ? 1.05 : 0;
+            });
+        })();
 
         /* =====================================================
            SIMULADOR
@@ -1216,30 +1271,53 @@
            FORMULÁRIO DE AGENDAMENTO
         ===================================================== */
         $('#fModel').innerHTML = '<option>Ainda não sei</option>' + CARS.map(c => '<option>' + c.name + '</option>').join('');
-        $('#fDate').min = new Date().toISOString().slice(0, 10);
+        const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const dateMin = ymd(new Date()), dateMax = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 2); return ymd(d); })();
+        $('#fDate').min = dateMin; $('#fDate').max = dateMax;
+        function dateOk() {
+            const el = $('#fDate'), v = el.value;
+            if (!v) return !el.validity.badInput;
+            return /^\d{4}-\d{2}-\d{2}$/.test(v) && v >= dateMin && v <= dateMax;
+        }
         $('#bookForm').addEventListener('submit', e => {
             e.preventDefault();
             const name = $('#fName'), phone = $('#fPhone');
             const okN = name.value.trim().length >= 3, okP = phone.value.replace(/\D/g, '').length >= 10;
-            name.classList.toggle('bad', !okN); phone.classList.toggle('bad', !okP);
-            if (!okN || !okP) { toast('Confira os campos destacados.'); return; }
+            const okD = dateOk();
+            name.classList.toggle('bad', !okN); phone.classList.toggle('bad', !okP); $('#fDate').classList.toggle('bad', !okD);
+            if (!okN || !okP || !okD) { toast('Confira os campos destacados.'); return; }
             const d = $('#fDate').value ? $('#fDate').value.split('-').reverse().join('/') : 'a combinar';
             const msg = $('#fMsg').value.trim();
             openWA('Olá! Meu nome é ' + name.value.trim() + '.\nGostaria de agendar uma visita privada na AURA.\n\nModelo: ' + $('#fModel').value + '\nData preferida: ' + d + '\nPeríodo: ' + $('#fPeriod').value + '\nWhatsApp: ' + phone.value.trim() + (msg ? '\nMensagem: ' + msg : ''));
             toast('Abrindo o WhatsApp com a sua solicitação.');
         });
-        [$('#fName'), $('#fPhone')].forEach(i => i.addEventListener('input', () => i.classList.remove('bad')));
+        [$('#fName'), $('#fPhone'), $('#fDate')].forEach(i => i.addEventListener('input', () => i.classList.remove('bad')));
+        $('#fDate').addEventListener('change', () => $('#fDate').classList.toggle('bad', !dateOk()));
+
+
+        /* Chat do desenvolvedor: troque DEV_PHONE pelo seu WhatsApp, se for diferente do atelier */
+        const DEV_PHONE = PHONE;
+        const DEV_MSGS = {
+            1: 'Olá Samuel! Vi o site da AURA e quero um site para a minha empresa.',
+            2: 'Olá Samuel! Vi o site da AURA e gostaria de um orçamento.',
+            3: 'Olá Samuel! Gostaria de ver exemplos de trabalhos que você já fez.',
+            4: 'Olá Samuel! Preciso de suporte / manutenção em um site ou sistema.',
+            5: 'Olá Samuel! Queria falar direto com você sobre um projeto.'
+        };
+        $('#devChat').addEventListener('click', e => {
+            const b = e.target.closest('[data-o]'); if (!b) return;
+            window.open('https://wa.me/' + DEV_PHONE + '?text=' + encodeURIComponent(DEV_MSGS[b.dataset.o]), '_blank', 'noopener');
+        });
 
         /* =====================================================
            CURSOR / MAGNETIC / MENU
         ===================================================== */
         const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
-        const dot = $('.cursor-dot'), circle = $('.cursor-circle'), circleLabel = $('span', circle);
+        const circle = $('.cursor-circle'), circleLabel = $('span', circle);
         const cur2 = { x: innerWidth / 2, y: innerHeight / 2, tx: innerWidth / 2, ty: innerHeight / 2 };
         window.addEventListener('pointermove', e => {
             mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = (e.clientY / innerHeight) * 2 - 1;
             cur2.tx = e.clientX; cur2.ty = e.clientY;
-            if (fine) { dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px'; }
         }, { passive: true });
         if (fine) {
             document.addEventListener('pointerover', e => {
@@ -1574,6 +1652,92 @@
             mirror.scale.y = -1;
             rig.add(car, mirror);
 
+            /* ---------- INTERIOR 3D (muda com a opção escolhida) ---------- */
+            const INT = { group: new THREE.Group(), seats: [], wheel: null, console: null, mats: {}, target: {}, light: null };
+            (function buildInterior() {
+                const M = o => new THREE.MeshStandardMaterial(Object.assign({ metalness: .1, roughness: .55, envMapIntensity: .9 }, o));
+                const seatM = M({ color: lin('#17171d') }), dashM = M({ color: lin('#101014'), roughness: .6 });
+                const trimM = M({ color: lin('#d4af37'), metalness: 1, roughness: .28, envMapIntensity: 1.4 });
+                const carpetM = M({ color: lin('#0b0b0e'), roughness: .95 });
+                const stitchM = new THREE.MeshBasicMaterial({ color: lin('#d4af37') });
+                const glowM = new THREE.MeshBasicMaterial({ color: lin('#d4af37') });
+                const screenM = new THREE.MeshBasicMaterial({ color: lin('#38e8ff') });
+                INT.mats = { seat: seatM, dash: dashM, trim: trimM, carpet: carpetM, stitch: stitchM, glow: glowM };
+                (function carbonTex() {
+                    const c = document.createElement('canvas'); c.width = c.height = 32;
+                    const g = c.getContext('2d');
+                    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? '#3d3d46' : '#17171c'; g.fillRect(i * 16, j * 16, 16, 16); }
+                    g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 1;
+                    for (let k = -32; k < 64; k += 4) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + 32, 32); g.stroke(); }
+                    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 2); t.encoding = THREE.sRGBEncoding;
+                    INT.carbon = t;
+                })();
+                const add = (parent, w, h, d, x, y, z, mat, rz) => {
+                    const m = new THREE.Mesh(G.box, mat); m.scale.set(w, h, d); m.position.set(x, y, z);
+                    if (rz) m.rotation.z = rz; parent.add(m); return m;
+                };
+                function makeSeat() {
+                    const s = new THREE.Group();
+                    add(s, .4, .12, .3, 0, -.06, 0, carpetM);
+                    add(s, .52, .1, .46, 0, .06, 0, seatM);
+                    add(s, .52, .14, .07, 0, .1, .245, seatM); add(s, .52, .14, .07, 0, .1, -.245, seatM);
+                    add(s, .52, .012, .34, 0, .112, 0, stitchM);
+                    add(s, .09, .58, .46, -.26, .36, 0, seatM, .2);
+                    add(s, .11, .5, .07, -.24, .36, .245, seatM, .2); add(s, .11, .5, .07, -.24, .36, -.245, seatM, .2);
+                    add(s, .098, .46, .014, -.212, .37, 0, stitchM, .2);
+                    add(s, .08, .17, .26, -.32, .74, 0, seatM, .2);
+                    return s;
+                }
+                [[0, -.36], [0, .36], [-.92, -.36], [-.92, .36]].forEach(p => {
+                    const s = makeSeat(); s.position.set(p[0], .14, p[1]); INT.group.add(s); INT.seats.push(s);
+                });
+                add(INT.group, 1.9, .02, 1.5, -.05, .02, 0, carpetM);
+                // painel
+                add(INT.group, .34, .2, 1.5, .85, .38, 0, dashM);
+                INT.hood = add(INT.group, .3, .1, .56, .8, .53, -.36, dashM);
+                add(INT.group, .02, .035, 1.5, .675, .4, 0, trimM);
+                add(INT.group, .02, .012, 1.5, .672, .3, 0, glowM);
+                const scr = add(INT.group, .03, .15, .34, .7, .5, 0, screenM); scr.rotation.z = -.25;
+                const cl = INT.cluster = add(INT.group, .02, .09, .28, .655, .55, -.36, screenM); cl.rotation.z = -.25;
+                // console central
+                INT.console = new THREE.Group(); INT.group.add(INT.console);
+                add(INT.console, 1.1, .14, .2, .1, .2, 0, dashM);
+                add(INT.console, 1.1, .02, .21, .1, .275, 0, trimM);
+                add(INT.console, .07, .09, .07, .35, .33, 0, trimM);
+                // portas
+                [-1, 1].forEach(sd => {
+                    add(INT.group, 1.6, .36, .06, -.05, .3, sd * .7, dashM);
+                    add(INT.group, 1.6, .025, .075, -.05, .5, sd * .7, trimM);
+                    add(INT.group, 1.5, .012, .012, -.05, .43, sd * .665, glowM);
+                });
+                // volante
+                INT.wheel = new THREE.Group();
+                const ring = new THREE.Mesh(new THREE.TorusGeometry(.15, .024, 10, 36), dashM); ring.rotation.y = Math.PI / 2;
+                INT.wheel.add(ring);
+                add(INT.wheel, .02, .03, .28, 0, 0, 0, trimM); add(INT.wheel, .03, .05, .07, 0, 0, 0, trimM);
+                add(INT.wheel, .022, .012, .02, 0, .15, 0, stitchM);
+                INT.wheel.rotation.z = .42; INT.wheel.position.set(.58, .55, -.36);
+                INT.group.add(INT.wheel);
+                INT.light = new THREE.PointLight(0xfff1dc, 0, 5);
+                INT.group.traverse(o => { if (o.isMesh) o.renderOrder = 1; });
+            })();
+            function styleTargets() {
+                const st = INTERIORS[CFG.interior];
+                ['seat', 'dash', 'trim', 'carpet', 'stitch', 'glow'].forEach(k => { INT.target[k] = lin(st[k]); });
+                INT.mats.trim.metalness = st.metal; INT.mats.seat.roughness = st.rough;
+                [INT.mats.dash, INT.mats.trim].forEach(m => { m.map = st.carbon ? INT.carbon : null; m.needsUpdate = true; });
+                if (st.carbon) { INT.target.dash = lin('#a2a2ae'); INT.target.trim = lin('#c4c4d0'); }
+                const solo = CFG.model === 5, rear = CFG.model === 0 || CFG.model === 2 || CFG.model === 4;
+                INT.seats[0].position.z = solo ? 0 : -.36; INT.seats[1].visible = !solo;
+                INT.seats[2].visible = INT.seats[3].visible = rear && !solo;
+                INT.console.visible = !solo; INT.wheel.position.z = solo ? 0 : -.36;
+                INT.hood.position.z = INT.cluster.position.z = solo ? 0 : -.36;
+                CFG.intDirty = false;
+            }
+            INT.group.position.set(-.4, .2, 0); INT.group.scale.setScalar(.95);
+            rig.add(INT.group); rig.add(INT.light); INT.light.position.set(.1, 1.7, 0);
+            CFG.intDirty = true;
+
             /* ---------- realistic car model (GLB) with procedural fallback ----------
                Para usar o seu próprio carro, coloque um arquivo "car.glb" ao lado do index.html.
                Ele é tentado primeiro; se falhar, usa os modelos abaixo e, por fim, o carro procedural. */
@@ -1582,7 +1746,7 @@
                 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/ferrari.glb',
                 'https://threejs.org/examples/models/gltf/ferrari.glb'
             ];
-            const glb = { wheels: [], mirrorBody: [] };
+            const glb = { wheels: [], mirrorBody: [], interior: [], active: false };
             rig.visible = false;
             function showProcedural() { rig.visible = true; carSettled = true; }
             function installModel(model) {
@@ -1634,6 +1798,23 @@
                 PARTS.fade.push({ m: bodyM, base: 1, ghost: false }, { m: glassM, base: .6, ghost: false });
                 glb.wheels = wheelNodes;
                 car.add(pivot);
+                // usa o interior do próprio modelo: recolore bancos/painel conforme a opção escolhida
+                INT.group.visible = false; glb.active = true;
+                pivot.updateMatrixWorld(true);
+                const tmpB = new THREE.Box3(), tmpC = new THREE.Vector3();
+                pivot.traverse(o => {
+                    if (!o.isMesh || Array.isArray(o.material) || !o.material.color) return;
+                    const n = (o.name || '').toLowerCase();
+                    if (/^body|glass|rim|trim|wheel|tire|tyre|disc|brake|caliper/.test(n)) return;
+                    for (let a = o.parent; a && a !== pivot; a = a.parent) if (/wheel|rim|tire|tyre/.test((a.name || '').toLowerCase())) return;
+                    const m0 = o.material, c0 = m0.color, mx = Math.max(c0.r, c0.g, c0.b), mn = Math.min(c0.r, c0.g, c0.b);
+                    if (mx > 0 && (mx - mn) / mx > .3) return;
+                    tmpB.setFromObject(o).getCenter(tmpC);
+                    if (tmpC.y < .22 || Math.abs(tmpC.z) > .85 || tmpC.x < -1.35 || tmpC.x > 1.15) return;
+                    const lum = .2126 * c0.r + .7152 * c0.g + .0722 * c0.b;
+                    o.material = m0.clone();
+                    glb.interior.push({ m: o.material, seat: lum > .12 });
+                });
             }
             const gltfLoader = THREE.GLTFLoader ? new THREE.GLTFLoader() : null;
             if (gltfLoader && THREE.DRACOLoader) {
@@ -1787,10 +1968,16 @@
             }
 
             /* drag to rotate in stage sections */
-            let userRot = 0, dragVel = 0, dragging = false, lastX = 0;
-            $$('.stage').forEach(st => st.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; dragVel = 0; }));
-            window.addEventListener('pointermove', e => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; userRot += dx * .01; dragVel = dx * .01; });
+            let userRot = 0, dragVel = 0, dragging = false, lastX = 0, lastYd = 0, pitchCur = 0, seeCur = 0, inStage = false;
+            $$('.stage').forEach(st => st.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastYd = e.clientY; dragVel = 0; }));
+            window.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                const dx = e.clientX - lastX, dy = e.clientY - lastYd; lastX = e.clientX; lastYd = e.clientY;
+                userRot += dx * .01; dragVel = dx * .01;
+                if (inStage) VIEW.pitchGoal = Math.max(-.12, Math.min(1.3, VIEW.pitchGoal + dy * .009));
+            });
             window.addEventListener('pointerup', () => { dragging = false; });
+            window.addEventListener('pointercancel', () => { dragging = false; });
 
             function resize() {
                 measure();
@@ -1804,14 +1991,16 @@
             resize();
 
             let lastXray = -1;
-            function applyXray(x) {
-                if (Math.abs(x - lastXray) < .002) return;
-                lastXray = x;
+            let lastSee = -1;
+            function applyXray(x, see) {
+                if (Math.abs(x - lastXray) < .002 && Math.abs(see - lastSee) < .002) return;
+                lastXray = x; lastSee = see;
                 PARTS.fade.forEach(f => {
-                    const o = f.base * (1 - x * .88);
+                    const o = f.base * (1 - Math.max(x * .88, see * .64));
                     f.m.opacity = o;
                     if (!f.ghost) { const tr = o < .995; if (f.m.transparent !== tr) { f.m.transparent = tr; f.m.needsUpdate = true; } f.m.depthWrite = o > .6; }
                 });
+                PARTS.bodyMats.forEach(m => { m.envMapIntensity = 1.5 * (1 - see * .8); if ('clearcoat' in m) m.clearcoat = 1 - see * .95; });
                 PARTS.wire.forEach(m => { m.opacity = x * .3; });
                 const vis = x > .02;
                 PARTS.internals.forEach(o => { o.visible = vis; });
@@ -1852,20 +2041,35 @@
                 light1.color.copy(l1C); light2.color.copy(l2C);
                 pMat.color.copy(accentC).lerp(new THREE.Color(1, 1, 1), .55);
 
-                camera.position.set(cur.cx + mouse.sx * .8, cur.cy - mouse.sy * .4, cur.cz);
-                camera.lookAt(cur.lx, cur.ly, cur.lz);
+                const stageSec = sec === S.experiencia || sec === S.configurador;
+                inStage = stageSec;
+                if (!stageSec) VIEW.pitchGoal = 0;
+                pitchCur += (VIEW.pitchGoal - pitchCur) * Math.min(1, dt * 4);
+                const seeT = sec === S.configurador ? Math.max(0, Math.min(1, (pitchCur - .5) / .6)) : 0;
+                seeCur += (seeT - seeCur) * Math.min(1, dt * 5);
+                const isInt = VIEW.pitchGoal > .7 ? 1 : 0;
+                if (isInt !== VIEW.ui) { VIEW.ui = isInt; $$('#viewToggle button').forEach(b => b.classList.toggle('on', (b.dataset.view === 'int') === !!isInt)); }
+                if (CFG.intDirty) styleTargets();
+                ['seat', 'dash', 'trim', 'carpet', 'stitch', 'glow'].forEach(k => { if (INT.target[k]) INT.mats[k].color.lerp(INT.target[k], kc); });
+                if (glb.active) glb.interior.forEach(it => { const tc = it.seat ? INT.target.seat : INT.target.dash; if (tc) { it.m.color.lerp(tc, kc); it.m.roughness = INTERIORS[CFG.interior].rough; } });
+                INT.light.intensity = (glb.active ? 1.6 : 1.9) * seeCur;
+
+                const ox = cur.cx + mouse.sx * .8 - cur.lx, oy = cur.cy - mouse.sy * .4 - cur.ly, oz = cur.cz - cur.lz;
+                const rr = Math.hypot(ox, oy, oz), az = Math.atan2(oz, ox), el0 = Math.atan2(oy, Math.hypot(ox, oz));
+                const el = Math.max(-.05, Math.min(1.5, el0 + pitchCur)), r2 = rr * (1 - .3 * seeCur);
+                camera.position.set(cur.lx + Math.cos(az) * Math.cos(el) * r2, cur.ly + Math.sin(el) * r2, cur.lz + Math.sin(az) * Math.cos(el) * r2);
+                camera.lookAt(cur.lx, cur.ly + .1 * seeCur, cur.lz);
                 camera.setViewOffset(W, H, -cur.sx * W, -cur.sy * H, W, H);
 
-                const stageSec = sec === S.experiencia || sec === S.configurador;
                 if (!stageSec) { userRot += (0 - userRot) * Math.min(1, dt * 2); }
                 if (!dragging) { userRot += dragVel; dragVel *= .94; }
-                const sway = reduced ? 0 : Math.sin(t * .35) * .16 * (1 - cur.xray * .75);
+                const sway = reduced ? 0 : Math.sin(t * .35) * .16 * (1 - cur.xray * .75) * (1 - seeCur);
                 rig.rotation.y = cur.ry + sway + userRot + mouse.sx * .2;
                 spinA += ((reduced ? 0 : .8) + Math.abs(vel) * .012) * dt;
                 PARTS.wheels.forEach(w => { w.rotation.z = -spinA; });
                 glb.wheels.forEach(w => { w.rotation.x = spinA; });
                 glb.mirrorBody.forEach(m => m.color.copy(bodyC));
-                applyXray(cur.xray);
+                applyXray(cur.xray, glb.active ? 0 : seeCur);
                 if (PARTS.scan && PARTS.scan.visible) {
                     PARTS.scan.position.x = Math.sin(t * .9) * 2.1;
                     PARTS.scan.material.opacity = cur.xray * (.18 + .1 * Math.sin(t * 6));
@@ -1884,7 +2088,7 @@
                 pGeo.attributes.position.needsUpdate = true;
                 particles.rotation.y = t * .012 + mouse.sx * .08;
 
-                renderer.toneMappingExposure = cur.exp;
+                renderer.toneMappingExposure = cur.exp + .08 * seeCur;
                 renderer.render(scene, camera);
             }
             requestAnimationFrame(frame);
